@@ -168,8 +168,8 @@ public class ArgoUMLEvalTest {
 		// register jar files
 		System.out.println("REGISTERING JAR FILES");
 		JavaClasspath cp = JavaClasspath.get(resourceSet);
-		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\rt.jar").toAbsolutePath().toString()));
-		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jmi.jar").toAbsolutePath().toString()));
+		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jamopp\\rt.jar").toAbsolutePath().toString()));
+		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\argouml\\jmi.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
 		// Path[] libraryFolders = new Path[] { location };
 		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\") };
@@ -187,11 +187,12 @@ public class ArgoUMLEvalTest {
 
 		// collect files to parse
 		List<Path> javaFiles = new ArrayList<>();
-		Path[] sourceFolders = new Path[] { location.resolve("argouml-core-model\\src"), location.resolve("argouml-core-model-euml\\src"), location.resolve("argouml-core-model-mdr\\src"), location.resolve("argouml-app\\src"), location.resolve("argouml-core-diagrams-sequence2\\src") };
+		Path[] sourceFolders = new Path[] { location.resolve("argouml-core-model\\src"), location.resolve("argouml-core-model-euml\\src"), location.resolve("argouml-core-model-mdr\\src") }; // , location.resolve("argouml-app\\src"), location.resolve("argouml-core-diagrams-sequence2\\src") };
 		// Path[] sourceFolders = new Path[] { location };
 		for (Path sourceFolder : sourceFolders) {
 			Files.walk(sourceFolder).forEach(f -> {
-				if (Files.isDirectory(f) && !f.equals(sourceFolder) && !f.getFileName().toString().startsWith(".") && !f.getFileName().toString().equals("META-INF") && !f.getFileName().toString().equals("test_project.marker_vitruv") && !f.getFileName().toString().equals("umloutput") && !f.getFileName().toString().contains("-") && !f.getFileName().toString().startsWith("build-eclipse") && !f.getFileName().toString().startsWith("bin") && !f.getFileName().toString().startsWith("template")) {
+				if (Files.isDirectory(f) && !f.equals(sourceFolder) && !f.getFileName().toString().startsWith(".") && !f.getFileName().toString().equals("META-INF") && !f.getFileName().toString().equals("test_project.marker_vitruv") && !f.getFileName().toString().equals("umloutput") && !f.getFileName().toString().contains("-") && !f.getFileName().toString().startsWith("build-eclipse")
+						&& !f.getFileName().toString().startsWith("bin") && !f.getFileName().toString().startsWith("template")) {
 //					Path packageInfoPath = f.resolve(Paths.get("package-info.java"));
 //					try {
 //						if (!Files.exists(packageInfoPath)) {
@@ -388,8 +389,8 @@ public class ArgoUMLEvalTest {
 
 		// register jar files
 		System.out.println("REGISTERING JAR FILES");
-		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\rt.jar").toAbsolutePath().toString()));
-		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jmi.jar").toAbsolutePath().toString()));
+		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jamopp\\rt.jar").toAbsolutePath().toString()));
+		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\argouml\\jmi.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
 		// Path[] libraryFolders = new Path[] { location };
 		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\") };
