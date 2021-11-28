@@ -128,7 +128,7 @@ public class ArgoUMLEvalTest {
 		for (int i = 0; i < 100; i++)
 			irp.addUserInteractions(new UserInteractionBase[] { ftui, ftui });
 
-		this.vave = new VirtualVaVeModeIImpl(domains, changePropagationSpecifications, irp, projectFolder);
+		this.vave = new VirtualVaVeModeIImpl(domains, changePropagationSpecifications, irp, projectFolder, new VirtualProductModelArgoUMLInitializer());
 
 		// set up jamopp
 		JavaClasspath.getInitializers().clear();
