@@ -37,7 +37,7 @@ import tools.vitruv.testutils.TestProject;
 import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
-import tools.vitruv.variability.vave.impl.VirtualVaVeModeIImpl;
+import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
 import vavemodel.Configuration;
 import vavemodel.FeatureOption;
 import vavemodel.VavemodelFactory;
@@ -184,7 +184,7 @@ public class JamoppNewTest {
 //		JavaToUmlChangePropagationSpecification javaumlcps = new JavaToUmlChangePropagationSpecification();
 //		changePropagationSpecifications.add(javaumlcps);
 
-		VirtualVaVeModel vave = new VirtualVaVeModeIImpl(domains, changePropagationSpecifications, UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null), projectFolder);
+		VirtualVaVeModel vave = new VirtualVaVeModelImpl(domains, changePropagationSpecifications, UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null), projectFolder);
 
 		// load java files into models
 //		JamoppLibraryHelper.registerStdLib();

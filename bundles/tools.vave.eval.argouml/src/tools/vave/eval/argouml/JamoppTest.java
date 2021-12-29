@@ -53,7 +53,7 @@ import tools.vitruv.testutils.TestProject;
 import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
-import tools.vitruv.variability.vave.impl.VirtualVaVeModeIImpl;
+import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
 import vavemodel.Configuration;
 import vavemodel.FeatureOption;
 import vavemodel.VavemodelFactory;
@@ -120,7 +120,7 @@ public class JamoppTest {
 		Set<VitruvDomain> domains = new HashSet<>();
 		domains.add(new JavaDomainProvider().getDomain());
 
-		VirtualVaVeModel vave = new VirtualVaVeModeIImpl(domains, new HashSet<>(), UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null), projectFolder);
+		VirtualVaVeModel vave = new VirtualVaVeModelImpl(domains, new HashSet<>(), UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null), projectFolder);
 
 		// load java files into models
 		JamoppLibraryHelper.registerStdLib();
@@ -166,7 +166,7 @@ public class JamoppTest {
 		Set<VitruvDomain> domains = new HashSet<>();
 		domains.add(new JavaDomainProvider().getDomain());
 
-		VirtualVaVeModel vave = new VirtualVaVeModeIImpl(domains, new HashSet<>(), UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null), projectFolder);
+		VirtualVaVeModel vave = new VirtualVaVeModelImpl(domains, new HashSet<>(), UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null), projectFolder);
 
 		JamoppLibraryHelper.registerStdLib();
 
@@ -241,7 +241,7 @@ public class JamoppTest {
 		Set<VitruvDomain> domains = new HashSet<>();
 		domains.add(new JavaDomainProvider().getDomain());
 
-		VirtualVaVeModel vave = new VirtualVaVeModeIImpl(domains, new HashSet<>(), UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null), projectFolder);
+		VirtualVaVeModel vave = new VirtualVaVeModelImpl(domains, new HashSet<>(), UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null), projectFolder);
 
 		JamoppLibraryHelper.registerStdLib();
 
@@ -331,7 +331,7 @@ public class JamoppTest {
 		ftui.setText("umloutput");
 		irp.addUserInteractions(new UserInteractionBase[] { ftui, ftui });
 
-		VirtualVaVeModel vave = new VirtualVaVeModeIImpl(domains, changePropagationSpecifications, irp, projectFolder);
+		VirtualVaVeModel vave = new VirtualVaVeModelImpl(domains, changePropagationSpecifications, irp, projectFolder);
 
 		JamoppLibraryHelper.registerStdLib();
 
@@ -432,7 +432,7 @@ public class JamoppTest {
 		ftui.setText("umloutput");
 		irp.addUserInteractions(new UserInteractionBase[] { ftui, ftui });
 
-		VirtualVaVeModel vave = new VirtualVaVeModeIImpl(domains, changePropagationSpecifications, irp, projectFolder);
+		VirtualVaVeModel vave = new VirtualVaVeModelImpl(domains, changePropagationSpecifications, irp, projectFolder);
 
 		JamoppLibraryHelper.registerStdLib();
 

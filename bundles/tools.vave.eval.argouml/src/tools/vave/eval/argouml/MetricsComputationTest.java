@@ -78,14 +78,19 @@ public class MetricsComputationTest {
 	public void dummytest() {
 		EcoreUtil.getID(null);
 		EcoreUtil.setID(null, null);
+
+//		EcoreUtil.Copier copier = new EcoreUtil.Copier();
+//		EObject result = copier.copcopy(eObject);
+//		Collection results = copier.copyAll(eObjects);
+//		copier.copyReferences();
 	}
-	
+
 	@Test
 	public void compareTwoModelsTest() throws IOException {
 		int numDiffs = this.compareModelsOfArgoUMLVariants(Paths.get("C:\\Users\\ananieva\\Desktop\\model-full-v2.uml"), Paths.get("C:\\Users\\ananieva\\Desktop\\umloutput-full-v2.uml"));
 		System.out.println("NUM DIFFS: " + numDiffs);
 	}
-	
+
 	@Test
 	public void computeMetricsForEval() throws IOException {
 		Path groundTruthLocation = Paths.get("C:\\ArgoUML\\comparison");
@@ -190,7 +195,7 @@ public class MetricsComputationTest {
 					@Override
 					public boolean checkForOrderingChanges(EStructuralFeature feature) {
 						return false;
-						//return super.checkForOrderingChanges(feature);
+						// return super.checkForOrderingChanges(feature);
 					}
 				};
 			}
@@ -343,10 +348,10 @@ public class MetricsComputationTest {
 		System.out.println("DONE");
 
 		// count matched elements
-		int[] matchCount = new int[] { 0,0,0 };
+		int[] matchCount = new int[] { 0, 0, 0 };
 		this.countMatch(comparison.getMatches(), matchCount);
-		System.out.println("LEFT/MATCH/RIGHT: " + matchCount[0]+"/"+matchCount[1]+"/"+matchCount[2]);
-		
+		System.out.println("LEFT/MATCH/RIGHT: " + matchCount[0] + "/" + matchCount[1] + "/" + matchCount[2]);
+
 		return differences.size();
 	}
 
@@ -355,23 +360,21 @@ public class MetricsComputationTest {
 			if (match.getLeft() != null && match.getRight() != null) {
 				counter[1]++;
 				this.countMatch(match.getSubmatches(), counter);
-			}
-			else if (match.getLeft() != null) {
-				if ((match.getLeft() instanceof LiteralInteger || match.getLeft() instanceof LiteralUnlimitedNatural) && ( (((Match)match.eContainer()).getLeft() instanceof Parameter) || ((Match)match.eContainer()).getLeft() instanceof Property)) {// && ((Parameter)((Match)match.eContainer()).getLeft()).getDirection() == ParameterDirectionKind.RETURN_LITERAL) {
+			} else if (match.getLeft() != null) {
+				if ((match.getLeft() instanceof LiteralInteger || match.getLeft() instanceof LiteralUnlimitedNatural) && ((((Match) match.eContainer()).getLeft() instanceof Parameter) || ((Match) match.eContainer()).getLeft() instanceof Property)) {// && ((Parameter)((Match)match.eContainer()).getLeft()).getDirection() == ParameterDirectionKind.RETURN_LITERAL) {
 					// do nothing
 				} else {
 					counter[0]++;
 					System.out.println("LEFT: " + match.getLeft() + " / " + match.eContainer());
 				}
-			}
-			else if (match.getRight() != null) {
+			} else if (match.getRight() != null) {
 				counter[2]++;
 				System.out.println("RIGHT: " + match.getRight() + " / " + match.eContainer());
 			}
-			//this.countMatch(match.getSubmatches(), counter);
+			// this.countMatch(match.getSubmatches(), counter);
 		}
 	}
-	
+
 	@Test
 	public void compareModels() throws IOException {
 

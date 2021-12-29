@@ -79,7 +79,7 @@ import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
 import tools.vitruv.variability.vave.impl.FeatureModel;
-import tools.vitruv.variability.vave.impl.VirtualVaVeModeIImpl;
+import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
 import vavemodel.Configuration;
 import vavemodel.Conjunction;
 import vavemodel.CrossTreeConstraint;
@@ -128,7 +128,7 @@ public class ArgoUMLEvalTest {
 		for (int i = 0; i < 100; i++)
 			irp.addUserInteractions(new UserInteractionBase[] { ftui, ftui });
 
-		this.vave = new VirtualVaVeModeIImpl(domains, changePropagationSpecifications, irp, projectFolder, new VirtualProductModelArgoUMLInitializer());
+		this.vave = new VirtualVaVeModelImpl(domains, changePropagationSpecifications, irp, projectFolder, new VirtualProductModelArgoUMLInitializer());
 
 		// set up jamopp
 		JavaClasspath.getInitializers().clear();

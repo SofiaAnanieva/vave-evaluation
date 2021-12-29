@@ -64,7 +64,7 @@ import tools.vitruv.testutils.TestProject;
 import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
-import tools.vitruv.variability.vave.impl.VirtualVaVeModeIImpl;
+import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
 import vavemodel.Configuration;
 import vavemodel.VavemodelFactory;
 
@@ -92,7 +92,7 @@ public class JavaUmlPropagationTest {
 		ftui.setText("umloutput");
 		irp.addUserInteractions(new UserInteractionBase[] { ftui, ftui });
 
-		VirtualVaVeModel vave = new VirtualVaVeModeIImpl(domains, changePropagationSpecifications, irp, projectFolder);
+		VirtualVaVeModel vave = new VirtualVaVeModelImpl(domains, changePropagationSpecifications, irp, projectFolder);
 
 		// set up jamopp
 //		JamoppLibraryHelper.registerStdLib();

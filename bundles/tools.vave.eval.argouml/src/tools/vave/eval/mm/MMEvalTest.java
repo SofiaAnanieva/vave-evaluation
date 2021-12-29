@@ -1,5 +1,6 @@
-package tools.vave.eval.argouml;
+package tools.vave.eval.mm;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,6 +10,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -77,27 +79,29 @@ import tools.vitruv.testutils.RegisterMetamodelsInStandalone;
 import tools.vitruv.testutils.TestLogging;
 import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
+import tools.vitruv.variability.vave.VirtualProductModelInitializer;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
+import tools.vitruv.variability.vave.impl.FeatureModel;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
+import tools.vitruv.variability.vave.util.ExpressionPrinter;
 import vavemodel.Configuration;
+import vavemodel.Conjunction;
+import vavemodel.CrossTreeConstraint;
 import vavemodel.Expression;
 import vavemodel.Feature;
 import vavemodel.FeatureOption;
 import vavemodel.FeatureRevision;
 import vavemodel.SystemRevision;
+import vavemodel.TreeConstraint;
+import vavemodel.Variable;
 import vavemodel.VavemodelFactory;
 
-/**
- * Test that runs the entire ArgoUML evaluation as batch.
- */
 @ExtendWith({ TestProjectManager.class, TestLogging.class, RegisterMetamodelsInStandalone.class })
-//@Disabled
-public class ArgoUMLParseOnlyTest {
+public class MMEvalTest {
 
 	protected VirtualVaVeModel vave = null;
 
 	protected int productNumber = 0;
-	protected int sysrev = -1;
 
 	protected final Path projectFolder = Paths.get("C:\\FZI\\vave-project-folder");
 	protected final Path vaveResourceLocation = Paths.get("C:\\FZI\\vave-resource-location\\temp");
@@ -122,7 +126,38 @@ public class ArgoUMLParseOnlyTest {
 		for (int i = 0; i < 100; i++)
 			irp.addUserInteractions(new UserInteractionBase[] { ftui, ftui });
 
-		this.vave = new VirtualVaVeModelImpl(domains, changePropagationSpecifications, irp, projectFolder);
+		this.vave = new VirtualVaVeModelImpl(domains, changePropagationSpecifications, irp, projectFolder, new VirtualProductModelInitializer() {
+
+			@Override
+			public void initialize(VirtualProductModel vpm) {
+				ResourceSet resourceSet = vpm.getResourceSet();
+				resourceSet.getLoadOptions().put("DISABLE_LAYOUT_INFORMATION_RECORDING", Boolean.TRUE);
+				resourceSet.getLoadOptions().put("DISABLE_LOCATION_MAP", Boolean.TRUE);
+				resourceSet.getLoadOptions().put(JavaClasspath.OPTION_USE_LOCAL_CLASSPATH, Boolean.TRUE);
+				resourceSet.getLoadOptions().put(JavaClasspath.OPTION_REGISTER_STD_LIB, Boolean.FALSE);
+
+				// register jar files
+				System.out.println("REGISTERING JAR FILES");
+				JavaClasspath classPath = JavaClasspath.get(resourceSet, JavaClasspath.getInitializers());
+				classPath.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jamopp\\rt.jar").toAbsolutePath().toString()));
+				classPath.registerClassifierJar(URI.createFileURI(Paths.get("resources\\mm\\microemu-javase-applet-2.0.4.jar").toAbsolutePath().toString()));
+				Path[] libraryFolders = new Path[] {};
+
+				try {
+					for (Path libraryFolder : libraryFolders) {
+						Files.walk(libraryFolder).forEach(f -> {
+							if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {
+								classPath.registerClassifierJar(URI.createFileURI(f.toString()));
+								System.out.println("ADDED JAR FILE: " + f);
+							}
+						});
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+		});
 
 		// set up jamopp
 		JavaClasspath.getInitializers().clear();
@@ -162,11 +197,10 @@ public class ArgoUMLParseOnlyTest {
 		// register jar files
 		System.out.println("REGISTERING JAR FILES");
 		JavaClasspath cp = JavaClasspath.get(resourceSet);
-		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\rt.jar").toAbsolutePath().toString()));
-		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jmi.jar").toAbsolutePath().toString()));
+		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jamopp\\rt.jar").toAbsolutePath().toString()));
+		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\mm\\microemu-javase-applet-2.0.4.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
-		// Path[] libraryFolders = new Path[] { location };
-		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\") };
+		Path[] libraryFolders = new Path[] { location };
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
 				if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {
@@ -181,26 +215,20 @@ public class ArgoUMLParseOnlyTest {
 
 		// collect files to parse
 		List<Path> javaFiles = new ArrayList<>();
-		Path[] sourceFolders = new Path[] { location.resolve("argouml-core-model\\src"), location.resolve("argouml-core-model-euml\\src"), location.resolve("argouml-core-model-mdr\\src"), location.resolve("argouml-app\\src"), location.resolve("argouml-core-diagrams-sequence2\\src") };
-		// Path[] sourceFolders = new Path[] { location };
+		// parse constants first
+//		javaFiles.add(location.resolve(Paths.get("lancs\\mobilemedia\\core\\util\\Constants.java")));
+		Path[] sourceFolders = new Path[] { location };
 		for (Path sourceFolder : sourceFolders) {
 			Files.walk(sourceFolder).forEach(f -> {
 				if (Files.isDirectory(f) && !f.equals(sourceFolder) && !f.getFileName().toString().startsWith(".") && !f.getFileName().toString().equals("META-INF") && !f.getFileName().toString().equals("test_project.marker_vitruv") && !f.getFileName().toString().equals("umloutput") && !f.getFileName().toString().contains("-") && !f.getFileName().toString().startsWith("build-eclipse")
 						&& !f.getFileName().toString().startsWith("bin") && !f.getFileName().toString().startsWith("template")) {
-//					Path packageInfoPath = f.resolve(Paths.get("package-info.java"));
-//					try {
-//						if (!Files.exists(packageInfoPath)) {
-//							Files.createFile(packageInfoPath);
-//							Files.writeString(packageInfoPath, "package " + sourceFolder.relativize(f).toString().replace(java.io.File.separator, ".") + ";");
-//						}
-//						javaFiles.add(packageInfoPath);
-//						System.out.println("ADDED PACKAGE INFO FILE: " + packageInfoPath);
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
 				} else if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".java") && !f.getFileName().toString().equals("package-info.java")) {
-					javaFiles.add(f);
-					System.out.println("ADDED JAVA FILE: " + f);
+					if (!javaFiles.contains(f)) {
+						javaFiles.add(f);
+						System.out.println("ADDED JAVA FILE: " + f);
+					} else {
+						System.out.println("ALREADY CONTAINED JAVA FILE: " + f);
+					}
 
 					// prefill the uriconverter
 					Path relPath = sourceFolder.relativize(f);
@@ -215,24 +243,6 @@ public class ArgoUMLParseOnlyTest {
 				}
 			});
 		}
-		// manual workaround for now
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.model.mdr.UndoCoreHelperDecorator$StringSetter.java"), URI.createFileURI(location.resolve("argouml-core-model-mdr/src/org/argouml/model/mdr/UndoCoreHelperDecorator.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.diagram.DiagramFactory$DiagramType.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/diagram/DiagramFactory.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.diagram.sequence.ui.FigLifeLine$FigLifeLineHandler.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/diagram/sequence/ui/FigLifeLine.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.diagram.DiagramSettings$StereotypeStyle.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/diagram/DiagramSettings.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.diagram.sequence.ui.FigClassifierRole$TempFig.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/diagram/sequence/ui/FigClassifierRole.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.ui.ProjectBrowser$Position.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/ui/ProjectBrowser.java").toString()));
-
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$Setting.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$Setting2.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$UniqueSelection.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$UniqueSelection2.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$UserString.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$UserString2.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$BooleanSelection.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$BooleanSelection2.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$PathSelection.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$PathListSelection.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
 
 		// parse files
 		System.out.println("PARSING JAVA FILES");
@@ -253,24 +263,12 @@ public class ArgoUMLParseOnlyTest {
 
 		System.out.println("NUM RESOURCES IN RS: " + resourceSet.getResources().size());
 
-		for (Resource resource : resources) {
-			// if (resource.getURI().toString().contains("argouml") && resource.getURI().toString().contains("pathmap"))
-			if (resource.getURI().toString().contains("pathmap"))
-				System.out.println("DDD: " + resource.getURI());
-		}
-
-		for (Resource resource : resourceSet.getResources()) {
-			if (resource.getURI().toString().contains("argouml") && resource.getURI().toString().contains("pathmap"))
-				System.out.println("EEE: " + resource.getURI());
-		}
-
 		// resolve proxies
 		System.out.println("RESOLVING PROXIES");
 		resolveAllProxies(resourceSet);
 
 		// convert pathmap uris to filesystem uris
 		for (Resource resource : resources) {
-			// if (resource.getURI().toString().contains("pathmap:/javaclass/org.argouml")) {
 			if (resource.getURI().toString().contains("pathmap:/javaclass/")) {
 				if (resource.getURI().toString().contains("$")) {
 					// change name of compilation unit
@@ -383,11 +381,10 @@ public class ArgoUMLParseOnlyTest {
 
 		// register jar files
 		System.out.println("REGISTERING JAR FILES");
-		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\rt.jar").toAbsolutePath().toString()));
-		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jmi.jar").toAbsolutePath().toString()));
+		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jamopp\\rt.jar").toAbsolutePath().toString()));
+		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\mm\\microemu-javase-applet-2.0.4.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
-		// Path[] libraryFolders = new Path[] { location };
-		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\") };
+		Path[] libraryFolders = new Path[] {};
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
 				if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {
@@ -486,12 +483,11 @@ public class ArgoUMLParseOnlyTest {
 
 		// internalize changes in product into system
 		System.out.println("INTERNALIZING CHANGES IN PRODUCT INTO SYSTEM");
-		vave.internalizeChanges(vmp2, e);
+		FeatureModel repairedFM = vave.internalizeChanges(vmp2, e);
+		this.outputEvalFeatureModel(repairedFM);
 
 		long timeDiff = System.currentTimeMillis() - timeStart;
 		System.out.println("TOTAL TIME INTERNALIZATION: " + timeDiff);
-
-		sysrev++;
 	}
 
 	protected static void resolveAllProxies(ResourceSet rs) {
@@ -572,265 +568,412 @@ public class ArgoUMLParseOnlyTest {
 		// initialize vave system
 		// done in @Before
 
-		Path variantsLocation = Paths.get("C:\\FZI\\git\\argouml-spl-revisions-variants");
-		// Path variantsLocation = Paths.get("C:\\FZI\\git\\test-variants-4");
+		Path variantsLocation = Paths.get("C:\\FZI\\git\\mm-spl-revisions-variants");
 
-//		{ // # REVISION 0 (ArgoUML-SPL)
-//			Path revision0VariantsLocation = variantsLocation.resolve("R0_variants");
-//			System.out.println("START REV 0");
-//
-//			{ // CORE
-//				long timeStart = System.currentTimeMillis();
-//
-//				System.out.println("START REV 0 PROD 0");
-//
-//				Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V\\src\\"));
-//			
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//
-//			{ // COGNITIVE
-//				long timeStart = System.currentTimeMillis();
-//
-//				System.out.println("START REV 0 PROD 1");
-//
-//				Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V-COGN\\src"));
-//		
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//
-//			{ // LOGGING
-//				long timeStart = System.currentTimeMillis();
-//
-//				System.out.println("START REV 0 PROD 2");
-//
-//				Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V-LOGG\\src"));
-//		
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//
-//			{ // COGNITIVE && LOGGING
-//				long timeStart = System.currentTimeMillis();
-//
-//				System.out.println("START REV 0 PROD 3");
-//
-//				Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V-COGN-LOGG\\src"));
-//
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//
-//			// repeat above for every feature and every pair of features
-//			// internalize ArgoUML R0 Product P? (Core, ... three-wise ...) with ... && ... && ...
-//
-//			{ // ACTIVITYDIAGRAM
-//				long timeStart = System.currentTimeMillis();
-//
-//				System.out.println("START REV 0 PROD 4");
-//
-//				Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V-ACTI\\src"));
-//
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//
-//			{ // ACTIVITYDIAGRAM_and_LOGGING
-//				long timeStart = System.currentTimeMillis();
-//
-//				System.out.println("START REV 0 PROD 5");
-//
-//				Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V-LOGG-ACTI\\src"));
-//
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//
-//		}
+		Feature Fcore;
+		Feature Flabel;
+		Feature Fsortcount;
+		Feature Ffav;
+		Feature Fcopy;
 
-//		{ // # REVISION 1 (ArgoUML future revisions merged successively into ArgoUML-SPL)
-//			Path revisionVariantsLocation = variantsLocation.resolve("R1_variants");
-//			System.out.println("START REV 1");
-//			{
-//				long timeStart = System.currentTimeMillis();
-//
-//				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V\\src\\"));
-//
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//		}
-//
-//		{ // # REVISION 2
-//			Path revisionVariantsLocation = variantsLocation.resolve("R2_variants");
-//			System.out.println("START REV 2");
-//			{
-//				long timeStart = System.currentTimeMillis();
-//
-//				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-LOGG\\src\\"));
-//
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//		}
-//
-//		{ // # REVISION 3
-//			Path revisionVariantsLocation = variantsLocation.resolve("R3_variants");
-//			System.out.println("START REV 3");
-//			{
-//				long timeStart = System.currentTimeMillis();
-//
-//				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V\\src\\"));
-//
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//		}
-//
-//		{ // # REVISION 4
-//			Path revisionVariantsLocation = variantsLocation.resolve("R4_variants");
-//			System.out.println("START REV 4");
-//			{
-//				long timeStart = System.currentTimeMillis();
-//
-//				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-COGN\\src\\"));
-//
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//		}
-//
-//		{ // # REVISION 5
-//			Path revisionVariantsLocation = variantsLocation.resolve("R5_variants");
-//			System.out.println("START REV 5");
-//			{
-//				long timeStart = System.currentTimeMillis();
-//
-//				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-COGN-LOGG\\src\\"));
-//
-//				long timeDiff = System.currentTimeMillis() - timeStart;
-//				System.out.println("TOTAL TIME: " + timeDiff);
-//			}
-//		}
+		{ // # REVISION 1
+			Path revisionVariantsLocation = variantsLocation.resolve("R1_variants");
+			System.out.println("START REV 1");
 
-		{ // # REVISION 6
-			Path revisionVariantsLocation = variantsLocation.resolve("R6_variants");
-			System.out.println("START REV 6");
-			{
+			// internalize domain with just the feature and without any constraints
+			FeatureModel fm = new FeatureModel(null, null, new HashSet<FeatureOption>(), new HashSet<TreeConstraint>(), new HashSet<CrossTreeConstraint>());
+			Fcore = VavemodelFactory.eINSTANCE.createFeature();
+			Fcore.setName("Core");
+			fm.getFeatureOptions().add(Fcore);
+			this.vave.internalizeDomain(fm);
+			Fcore = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Core")).findAny().get();
+
+			{ // CORE
 				long timeStart = System.currentTimeMillis();
 
-				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V\\src\\"));
+				System.out.println("START REV 1 PROD 1");
+				// externalize empty product with expression TRUE
+				VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext-vsum\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext"));
+
+				VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext-int-vsum\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE\\src\\"));
+				Variable<FeatureOption> expression = VavemodelFactory.eINSTANCE.createVariable();
+				expression.setOption(Fcore);
+				this.internalize(vmp, vmp2, resources, expression);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R0-V-CORE-int"));
 
 				long timeDiff = System.currentTimeMillis() - timeStart;
 				System.out.println("TOTAL TIME: " + timeDiff);
 			}
+
+			// EVALUATION
+			// type 6
+			Path evalVariantsLocation = vaveResourceLocation.getParent().resolve("R1-eval-variants");
+			Files.createDirectory(evalVariantsLocation);
+			this.createEvalVariants(evalVariantsLocation);
+			// type 5
+			// TODO: check if the automatically added constraints match the actual constraints in the ground truth feature model of MM revision
 		}
 
-		{ // # REVISION 7
-			Path revisionVariantsLocation = variantsLocation.resolve("R7_variants");
-			System.out.println("START REV 7");
+		{ // # REVISION 2
+			Path revisionVariantsLocation = variantsLocation.resolve("R2_variants");
+			System.out.println("START REV 2");
+
+			// internalize domain with just the features and without any constraints
+			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemrevision().get(this.vave.getSystem().getSystemrevision().size() - 1));
+			Flabel = VavemodelFactory.eINSTANCE.createFeature();
+			Flabel.setName("Label");
+			fm.getFeatureOptions().add(Flabel);
+			Fsortcount = VavemodelFactory.eINSTANCE.createFeature();
+			Fsortcount.setName("SortCount");
+			fm.getFeatureOptions().add(Fsortcount);
+			this.vave.internalizeDomain(fm);
+			Flabel = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Label")).findAny().get();
+			Fsortcount = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("SortCount")).findAny().get();
+
 			{
 				long timeStart = System.currentTimeMillis();
 
-				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V\\src\\"));
+				System.out.println("START REV 2 PROD 1");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R2-V-CORE-ext-vsum\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R2-V-CORE-ext"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R2-V-CORE-ext-int-vsum\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL\\src\\"));
+				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
+				variable.setOption(Flabel);
+				this.internalize(vmp, vmp2, resources, variable);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-int"));
 
 				long timeDiff = System.currentTimeMillis() - timeStart;
 				System.out.println("TOTAL TIME: " + timeDiff);
 			}
+
 			{
 				long timeStart = System.currentTimeMillis();
 
-				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-LOGG\\src\\"));
+				System.out.println("START REV 2 PROD 2");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-ext-vsum\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-ext"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-ext-int-vsum\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-SORT\\src\\"));
+				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
+				variable.setOption(Fsortcount);
+				this.internalize(vmp, vmp2, resources, variable);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-SORT-int"));
 
 				long timeDiff = System.currentTimeMillis() - timeStart;
 				System.out.println("TOTAL TIME: " + timeDiff);
 			}
+
+			// EVALUATION
+			// type 6
+			Path evalVariantsLocation = vaveResourceLocation.getParent().resolve("R2-eval-variants");
+			Files.createDirectory(evalVariantsLocation);
+			this.createEvalVariants(evalVariantsLocation);
+			// type 5
+			// TODO: check if the automatically added constraints match the actual constraints in the ground truth feature model of MM revision
 		}
 
-		{ // # REVISION 8
-			Path revisionVariantsLocation = variantsLocation.resolve("R8_variants");
-			System.out.println("START REV 8");
+		{ // # REVISION 3
+			Path revisionVariantsLocation = variantsLocation.resolve("R3_variants");
+			System.out.println("START REV 3");
+
+			// internalize domain with just the features and without any constraints
+			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemrevision().get(this.vave.getSystem().getSystemrevision().size() - 1));
+			Ffav = VavemodelFactory.eINSTANCE.createFeature();
+			Ffav.setName("Fav");
+			fm.getFeatureOptions().add(Ffav);
+			this.vave.internalizeDomain(fm);
+			Ffav = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Fav")).findAny().get();
+
 			{
 				long timeStart = System.currentTimeMillis();
 
-				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V\\src\\"));
+				System.out.println("START REV 3 PROD 1");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext-vsum\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext-int-vsum\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL\\src\\"));
+				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
+				variable.setOption(Fcore);
+				this.internalize(vmp, vmp2, resources, variable);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-int"));
 
 				long timeDiff = System.currentTimeMillis() - timeStart;
 				System.out.println("TOTAL TIME: " + timeDiff);
 			}
+
+			{
+				long timeStart = System.currentTimeMillis();
+
+				System.out.println("START REV 3 PROD 2");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext-vsum2\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext2"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext-int-vsum2\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-FAV\\src\\"));
+				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
+				variable.setOption(Ffav);
+				this.internalize(vmp, vmp2, resources, variable);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-FAV-int"));
+
+				long timeDiff = System.currentTimeMillis() - timeStart;
+				System.out.println("TOTAL TIME: " + timeDiff);
+			}
+
+			// EVALUATION
+			// type 6
+			Path evalVariantsLocation = vaveResourceLocation.getParent().resolve("R3-eval-variants");
+			Files.createDirectory(evalVariantsLocation);
+			this.createEvalVariants(evalVariantsLocation);
+			// type 5
+			// TODO: check if the automatically added constraints match the actual constraints in the ground truth feature model of MM revision
 		}
 
-		{ // # REVISION 9
-			Path revisionVariantsLocation = variantsLocation.resolve("R9_variants");
-			System.out.println("START REV 9");
-			{
+		{ // # REVISION 4
+			Path revisionVariantsLocation = variantsLocation.resolve("R4_variants");
+			System.out.println("START REV 4");
+
+			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemrevision().get(this.vave.getSystem().getSystemrevision().size() - 1));
+			Fcopy = VavemodelFactory.eINSTANCE.createFeature();
+			Fcopy.setName("Copy");
+			fm.getFeatureOptions().add(Fcopy);
+			this.vave.internalizeDomain(fm);
+			Fcopy = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Copy")).findAny().get();
+
+			{ // core
 				long timeStart = System.currentTimeMillis();
 
-				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V\\src\\"));
+				System.out.println("START REV 4 PROD 1");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-int-vsum\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL\\src\\"));
+				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
+				variable.setOption(Fcore);
+				this.internalize(vmp, vmp2, resources, variable);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-int"));
 
 				long timeDiff = System.currentTimeMillis() - timeStart;
 				System.out.println("TOTAL TIME: " + timeDiff);
 			}
-			{
+
+			{ // sort
 				long timeStart = System.currentTimeMillis();
 
-				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-LOGG\\src\\"));
+				System.out.println("START REV 4 PROD 2");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum2\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext2"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-int-vsum2\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-SORT\\src\\"));
+				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
+				variable.setOption(Fsortcount);
+				this.internalize(vmp, vmp2, resources, variable);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-int"));
 
 				long timeDiff = System.currentTimeMillis() - timeStart;
 				System.out.println("TOTAL TIME: " + timeDiff);
 			}
+
+			{ // fav
+				long timeStart = System.currentTimeMillis();
+
+				System.out.println("START REV 4 PROD 3");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum3\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext3"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-int-vsum3\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-FAV\\src\\"));
+				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
+				variable.setOption(Ffav);
+				this.internalize(vmp, vmp2, resources, variable);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-FAV-int"));
+
+				long timeDiff = System.currentTimeMillis() - timeStart;
+				System.out.println("TOTAL TIME: " + timeDiff);
+			}
+
+			{ // sort && fav
+				long timeStart = System.currentTimeMillis();
+
+				System.out.println("START REV 4 PROD 4");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-ext-vsum\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-ext"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-ext-int-vsum\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-SORT-FAV\\src\\"));
+				Conjunction<FeatureOption> conjunction = VavemodelFactory.eINSTANCE.createConjunction();
+				Variable<FeatureOption> variable1 = VavemodelFactory.eINSTANCE.createVariable();
+				variable1.setOption(Fsortcount);
+				Variable<FeatureOption> variable2 = VavemodelFactory.eINSTANCE.createVariable();
+				variable2.setOption(Ffav);
+				conjunction.getTerm().add(variable1);
+				conjunction.getTerm().add(variable2);
+				this.internalize(vmp, vmp2, resources, conjunction);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-int"));
+
+				long timeDiff = System.currentTimeMillis() - timeStart;
+				System.out.println("TOTAL TIME: " + timeDiff);
+			}
+
+			{ // copy
+				long timeStart = System.currentTimeMillis();
+
+				System.out.println("START REV 4 PROD 5");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum4\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext4"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-int-vsum4\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-COPY\\src\\"));
+				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
+				variable.setOption(Fcopy);
+				this.internalize(vmp, vmp2, resources, variable);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-COPY-int"));
+
+				long timeDiff = System.currentTimeMillis() - timeStart;
+				System.out.println("TOTAL TIME: " + timeDiff);
+			}
+
+			// EVALUATION
+			// type 6
+			Path evalVariantsLocation = vaveResourceLocation.getParent().resolve("R4-eval-variants");
+			Files.createDirectory(evalVariantsLocation);
+			this.createEvalVariants(evalVariantsLocation);
+			// type 5
+			// TODO: check if the automatically added constraints match the actual constraints in the ground truth feature model of MM revision
 		}
 
+	}
+
+	private void outputEvalFeatureModel(FeatureModel repairedFM) {
+		System.out.println("FEATURE MODEL:");
+		System.out.println("ROOT FEATURE: " + repairedFM.getRootFeature());
+		System.out.println("TREE CONSTRAINTS:");
+		for (TreeConstraint tc : repairedFM.getTreeConstraints()) {
+			System.out.println(((Feature) tc.eContainer()).getName() + " -> " + tc.getType() + " -> {" + tc.getFeature().stream().map(f -> f.getName()).collect(Collectors.joining(", ")) + "}");
+		}
+		System.out.println("CROSS-TREE CONSTRAINTS:");
+		for (CrossTreeConstraint ctc : repairedFM.getCrossTreeConstraints()) {
+			System.out.println(new ExpressionPrinter().doSwitch(ctc.getExpression()));
+		}
 	}
 
 	private void createEvalVariants(Path targetLocation) throws Exception {
 		System.out.println("CREATING EVAL VARIANTS");
 
-		List<Feature> optionalFeatures = this.vave.getSystem().getFeature().stream().filter(f -> !f.getName().equals("Core")).collect(Collectors.toList());
 		SystemRevision latestSysRev = this.vave.getSystem().getSystemrevision().get(this.vave.getSystem().getSystemrevision().size() - 1);
-		Feature coreFeature = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Core")).findFirst().get();
-		FeatureRevision coreFeatureRev = coreFeature.getFeaturerevision().get(coreFeature.getFeaturerevision().size() - 1);
+		// optional features
+		List<Feature> optionalFeatures = this.vave.getSystem().getFeature().stream().filter(f -> !f.getName().equals("Core") && !f.getName().equals("Label")).collect(Collectors.toList());
+		// core features
+		Feature Fcore = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Core")).findFirst().get();
+		FeatureRevision coreFeatureRev = Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1);
+		Feature Flabel = null;
+		FeatureRevision labelFeatureRev = null;
+		Optional<Feature> FlabelOpt = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Label")).findFirst();
+		if (FlabelOpt.isPresent()) {
+			Flabel = FlabelOpt.get();
+			labelFeatureRev = Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1);
+		}
 
 		// only core
 		try {
-			Configuration emptyConfig = VavemodelFactory.eINSTANCE.createConfiguration();
-			emptyConfig.getOption().add(latestSysRev);
-			emptyConfig.getOption().add(coreFeatureRev);
-			this.externalize(emptyConfig, targetLocation.resolve("V-vsum"));
-			Files.move(vaveResourceLocation, targetLocation.resolve("V"));
+			Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
+			config.getOption().add(latestSysRev);
+			config.getOption().add(coreFeatureRev);
+			if (Flabel != null)
+				config.getOption().add(labelFeatureRev);
+			this.externalize(config, targetLocation.resolve("V-CORE-LABEL-vsum"));
+			Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		// single features
-		for (Feature optionalFeature : optionalFeatures) {
-			try {
-				Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-				config.getOption().add(latestSysRev);
-				config.getOption().add(coreFeatureRev);
-				config.getOption().add(optionalFeature.getFeaturerevision().get(optionalFeature.getFeaturerevision().size() - 1));
-				this.externalize(config, targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
-				Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-		// pair-wise feature interactions
-		for (int i = 0; i < optionalFeatures.size(); i++) {
-			for (int j = i + 1; j < optionalFeatures.size(); j++) {
+		if (optionalFeatures.size() >= 1) {
+			for (Feature optionalFeature : optionalFeatures) {
 				try {
 					Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
 					config.getOption().add(latestSysRev);
 					config.getOption().add(coreFeatureRev);
-					config.getOption().add(optionalFeatures.get(i).getFeaturerevision().get(optionalFeatures.get(i).getFeaturerevision().size() - 1));
-					config.getOption().add(optionalFeatures.get(j).getFeaturerevision().get(optionalFeatures.get(j).getFeaturerevision().size() - 1));
-					this.externalize(config, targetLocation.resolve("V-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase() + "-vsum"));
-					Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase()));
+					if (Flabel != null)
+						config.getOption().add(labelFeatureRev);
+					config.getOption().add(optionalFeature.getFeaturerevision().get(optionalFeature.getFeaturerevision().size() - 1));
+					this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeature.getName().toUpperCase() + "-vsum"));
+					Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeature.getName().toUpperCase()));
 				} catch (Exception e) {
 					e.printStackTrace();
+				}
+			}
+		}
+
+		// pair-wise feature interactions
+		if (optionalFeatures.size() >= 2) {
+			for (int i = 0; i < optionalFeatures.size(); i++) {
+				for (int j = i + 1; j < optionalFeatures.size(); j++) {
+					try {
+						Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
+						config.getOption().add(latestSysRev);
+						config.getOption().add(coreFeatureRev);
+						if (Flabel != null)
+							config.getOption().add(labelFeatureRev);
+						config.getOption().add(optionalFeatures.get(i).getFeaturerevision().get(optionalFeatures.get(i).getFeaturerevision().size() - 1));
+						config.getOption().add(optionalFeatures.get(j).getFeaturerevision().get(optionalFeatures.get(j).getFeaturerevision().size() - 1));
+						this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-vsum"));
+						Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase()));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -848,17 +991,21 @@ public class ArgoUMLParseOnlyTest {
 //		Files.move(vaveResourceLocation, targetLocation.resolve("V-" + Flogging.getName().substring(0, 4).toUpperCase() + "-" + Fcollaboration.getName().substring(0, 4).toUpperCase() + "-" + Fsequence.getName().substring(0, 4).toUpperCase()));
 
 		// all features
-		try {
-			Configuration allConfig = VavemodelFactory.eINSTANCE.createConfiguration();
-			allConfig.getOption().add(latestSysRev);
-			allConfig.getOption().add(coreFeatureRev);
-			allConfig.getOption().addAll(optionalFeatures.stream().map(f -> {
-				return f.getFeaturerevision().get(f.getFeaturerevision().size() - 1);
-			}).collect(Collectors.toList()));
-			this.externalize(allConfig, targetLocation.resolve("V-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-")) + "-vsum"));
-			Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-"))));
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (optionalFeatures.size() >= 3) {
+			try {
+				Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
+				config.getOption().add(latestSysRev);
+				config.getOption().add(coreFeatureRev);
+				if (Flabel != null)
+					config.getOption().add(labelFeatureRev);
+				config.getOption().addAll(optionalFeatures.stream().map(f -> {
+					return f.getFeaturerevision().get(f.getFeaturerevision().size() - 1);
+				}).collect(Collectors.toList()));
+				this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.stream().map(f -> f.getName().toUpperCase()).collect(Collectors.joining("-")) + "-vsum"));
+				Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.stream().map(f -> f.getName().toUpperCase()).collect(Collectors.joining("-"))));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
