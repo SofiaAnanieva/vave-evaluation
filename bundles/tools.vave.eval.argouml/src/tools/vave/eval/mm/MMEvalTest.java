@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -443,6 +444,25 @@ public class MMEvalTest {
 			merger.copyAllLeftToRight(differences, new BasicMonitor());
 		}
 
+		// check for deleted resources
+		Collection<Resource> deletedResources = referenceResourceSet.getResources().stream().filter(r -> r.getURI().toString().contains("mobilemedia") && resources.stream().filter(r2 -> r2.getURI().equals(r.getURI())).findAny().isEmpty()).collect(Collectors.toList());
+		for (Resource deletedResource : deletedResources) {
+			EMFCompare comparator = EMFCompare.builder().setMatchEngineFactoryRegistry(registry).setDiffEngine(diffEngine).build();
+
+			System.out.println("DELETED RESOURCE DETECTED: " + deletedResource.getURI());
+
+			IComparisonScope scope = new DefaultComparisonScope(new ResourceSetImpl().createResource(deletedResource.getURI()), deletedResource, null);
+			Comparison comparison = comparator.compare(scope);
+			List<Diff> differences = comparison.getDifferences();
+
+			System.out.println("NUM DIFFS: " + differences.size());
+			System.out.println("RESOURCE: " + deletedResource.getURI());
+
+			IMerger.Registry mergerRegistry = IMerger.RegistryImpl.createStandaloneInstance();
+			IBatchMerger merger = new BatchMerger(mergerRegistry);
+			merger.copyAllLeftToRight(differences, new BasicMonitor());
+		}
+
 		final TransactionalChange recordedChange = changeRecorder.endRecording();
 		changeRecorder.close();
 
@@ -640,11 +660,11 @@ public class MMEvalTest {
 			Flabel.setName("Label");
 			fm.getFeatureOptions().add(Flabel);
 			Fsortcount = VavemodelFactory.eINSTANCE.createFeature();
-			Fsortcount.setName("SortCount");
+			Fsortcount.setName("Sort");
 			fm.getFeatureOptions().add(Fsortcount);
 			this.vave.internalizeDomain(fm);
 			Flabel = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Label")).findAny().get();
-			Fsortcount = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("SortCount")).findAny().get();
+			Fsortcount = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Sort")).findAny().get();
 
 			FeatureModel repairedFM = null;
 
@@ -822,6 +842,7 @@ public class MMEvalTest {
 				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
 				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
 				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Fsortcount.getFeaturerevision().get(Fsortcount.getFeaturerevision().size() - 1));
 				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum2\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext2"));
@@ -845,6 +866,7 @@ public class MMEvalTest {
 				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
 				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
 				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Ffav.getFeaturerevision().get(Ffav.getFeaturerevision().size() - 1));
 				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum3\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext3"));
@@ -868,6 +890,8 @@ public class MMEvalTest {
 				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
 				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
 				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Fsortcount.getFeaturerevision().get(Fsortcount.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Ffav.getFeaturerevision().get(Ffav.getFeaturerevision().size() - 1));
 				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-ext"));
@@ -961,7 +985,7 @@ public class MMEvalTest {
 				System.out.println("TOTAL TIME: " + timeDiff);
 			}
 
-			{ // sms
+			{ // copy
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 5 PROD 2");
@@ -974,6 +998,30 @@ public class MMEvalTest {
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext-int-vsum\\src\\"));
+
+				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-COPY\\src\\"));
+				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
+				variable.setOption(Fcopy);
+				this.internalize(vmp, vmp2, resources, variable);
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-int"));
+
+				long timeDiff = System.currentTimeMillis() - timeStart;
+				System.out.println("TOTAL TIME: " + timeDiff);
+			}
+
+			{ // sms
+				long timeStart = System.currentTimeMillis();
+
+				System.out.println("START REV 5 PROD 3");
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
+				configuration.getOption().add(Fcopy.getFeaturerevision().get(Fcopy.getFeaturerevision().size() - 1));
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext-vsum2\\src\\"));
+				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext2"));
+
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext-int-vsum2\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-COPY-SMS\\src\\"));
 				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
@@ -1039,10 +1087,13 @@ public class MMEvalTest {
 			Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
 			config.getOption().add(latestSysRev);
 			config.getOption().add(coreFeatureRev);
-			if (Flabel != null)
+			String fileName = "V-CORE";
+			if (Flabel != null) {
 				config.getOption().add(labelFeatureRev);
-			this.externalize(config, targetLocation.resolve("V-CORE-LABEL-vsum"));
-			Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL"));
+				fileName += "-LABEL";
+			}
+			this.externalize(config, targetLocation.resolve(fileName + "-vsum"));
+			Files.move(vaveResourceLocation, targetLocation.resolve(fileName));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1051,14 +1102,16 @@ public class MMEvalTest {
 		if (optionalFeatures.size() >= 1) {
 			for (Feature optionalFeature : optionalFeatures) {
 				try {
-					Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-					config.getOption().add(latestSysRev);
-					config.getOption().add(coreFeatureRev);
-					if (Flabel != null)
-						config.getOption().add(labelFeatureRev);
-					config.getOption().add(optionalFeature.getFeaturerevision().get(optionalFeature.getFeaturerevision().size() - 1));
-					this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeature.getName().toUpperCase() + "-vsum"));
-					Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeature.getName().toUpperCase()));
+					if (!optionalFeature.getName().equals("SMS")) {
+						Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
+						config.getOption().add(latestSysRev);
+						config.getOption().add(coreFeatureRev);
+						if (Flabel != null)
+							config.getOption().add(labelFeatureRev);
+						config.getOption().add(optionalFeature.getFeaturerevision().get(optionalFeature.getFeaturerevision().size() - 1));
+						this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeature.getName().toUpperCase() + "-vsum"));
+						Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeature.getName().toUpperCase()));
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -1070,15 +1123,17 @@ public class MMEvalTest {
 			for (int i = 0; i < optionalFeatures.size(); i++) {
 				for (int j = i + 1; j < optionalFeatures.size(); j++) {
 					try {
-						Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-						config.getOption().add(latestSysRev);
-						config.getOption().add(coreFeatureRev);
-						if (Flabel != null)
-							config.getOption().add(labelFeatureRev);
-						config.getOption().add(optionalFeatures.get(i).getFeaturerevision().get(optionalFeatures.get(i).getFeaturerevision().size() - 1));
-						config.getOption().add(optionalFeatures.get(j).getFeaturerevision().get(optionalFeatures.get(j).getFeaturerevision().size() - 1));
-						this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-vsum"));
-						Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase()));
+						if (!(optionalFeatures.get(i).getName().equals("SMS") && !optionalFeatures.get(j).getName().equals("Copy") || optionalFeatures.get(j).getName().equals("SMS") && !optionalFeatures.get(i).getName().equals("Copy"))) {
+							Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
+							config.getOption().add(latestSysRev);
+							config.getOption().add(coreFeatureRev);
+							if (Flabel != null)
+								config.getOption().add(labelFeatureRev);
+							config.getOption().add(optionalFeatures.get(i).getFeaturerevision().get(optionalFeatures.get(i).getFeaturerevision().size() - 1));
+							config.getOption().add(optionalFeatures.get(j).getFeaturerevision().get(optionalFeatures.get(j).getFeaturerevision().size() - 1));
+							this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-vsum"));
+							Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase()));
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -1087,21 +1142,24 @@ public class MMEvalTest {
 		}
 
 		// three-wise feature interactions
-		if (optionalFeatures.size() >= 2) {
+		if (optionalFeatures.size() >= 3) {
 			for (int i = 0; i < optionalFeatures.size(); i++) {
 				for (int j = i + 1; j < optionalFeatures.size(); j++) {
 					for (int k = j + 1; k < optionalFeatures.size(); k++) {
 						try {
-							Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-							config.getOption().add(latestSysRev);
-							config.getOption().add(coreFeatureRev);
-							if (Flabel != null)
-								config.getOption().add(labelFeatureRev);
-							config.getOption().add(optionalFeatures.get(i).getFeaturerevision().get(optionalFeatures.get(i).getFeaturerevision().size() - 1));
-							config.getOption().add(optionalFeatures.get(j).getFeaturerevision().get(optionalFeatures.get(j).getFeaturerevision().size() - 1));
-							config.getOption().add(optionalFeatures.get(k).getFeaturerevision().get(optionalFeatures.get(k).getFeaturerevision().size() - 1));
-							this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-" + optionalFeatures.get(k).getName().toUpperCase() + "-vsum"));
-							Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-" + optionalFeatures.get(k).getName().toUpperCase()));
+							List<String> optionalFeaturesList = Arrays.asList(optionalFeatures.get(i).getName(), optionalFeatures.get(j).getName(), optionalFeatures.get(k).getName());
+							if (!(optionalFeaturesList.contains("SMS") && !optionalFeaturesList.contains("Copy"))) {
+								Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
+								config.getOption().add(latestSysRev);
+								config.getOption().add(coreFeatureRev);
+								if (Flabel != null)
+									config.getOption().add(labelFeatureRev);
+								config.getOption().add(optionalFeatures.get(i).getFeaturerevision().get(optionalFeatures.get(i).getFeaturerevision().size() - 1));
+								config.getOption().add(optionalFeatures.get(j).getFeaturerevision().get(optionalFeatures.get(j).getFeaturerevision().size() - 1));
+								config.getOption().add(optionalFeatures.get(k).getFeaturerevision().get(optionalFeatures.get(k).getFeaturerevision().size() - 1));
+								this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-" + optionalFeatures.get(k).getName().toUpperCase() + "-vsum"));
+								Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-" + optionalFeatures.get(k).getName().toUpperCase()));
+							}
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -1111,7 +1169,7 @@ public class MMEvalTest {
 		}
 
 		// all features
-		if (optionalFeatures.size() >= 3) {
+		if (optionalFeatures.size() >= 4) {
 			try {
 				Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
 				config.getOption().add(latestSysRev);
