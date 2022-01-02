@@ -59,8 +59,10 @@ import com.google.common.cache.CacheBuilder;
 import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceSetUtil;
 import tools.vave.java.HierarchicalMatchEngineFactory;
 import tools.vave.java.SimilarityChecker;
+import tools.vitruv.applications.pcmjava.pojotransformations.java2pcm.Java2PcmChangePropagationSpecification;
 import tools.vitruv.applications.umljava.JavaToUmlChangePropagationSpecification;
 import tools.vitruv.domains.java.JavaDomainProvider;
+import tools.vitruv.domains.pcm.PcmDomainProvider;
 import tools.vitruv.domains.uml.UmlDomainProvider;
 import tools.vitruv.framework.change.description.TransactionalChange;
 import tools.vitruv.framework.change.description.VitruviusChange;
@@ -116,10 +118,14 @@ public class MMEvalTest {
 		Set<VitruvDomain> domains = new HashSet<>();
 		domains.add(new JavaDomainProvider().getDomain());
 		domains.add(new UmlDomainProvider().getDomain());
+		domains.add(new PcmDomainProvider().getDomain());
 
 		Set<ChangePropagationSpecification> changePropagationSpecifications = new HashSet<>();
 		JavaToUmlChangePropagationSpecification javaumlcps = new JavaToUmlChangePropagationSpecification();
 		changePropagationSpecifications.add(javaumlcps);
+
+		Java2PcmChangePropagationSpecification javapcmcps = new Java2PcmChangePropagationSpecification();
+		changePropagationSpecifications.add(javapcmcps);
 
 		PredefinedInteractionResultProvider irp = UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null);
 		FreeTextUserInteraction ftui = new InteractionFactoryImpl().createFreeTextUserInteraction();
