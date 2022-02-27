@@ -68,7 +68,7 @@ public class MMMetricsComputationTest {
 
 			List<Map<String, Integer>> revisionMap = new ArrayList<>();
 
-			for (int rev = 2; rev <= 5; rev++) {
+			for (int rev = 1; rev <= 5; rev++) {
 				Path previousRevisionLocation = groundTruthLocation.resolve("R" + (rev - 1) + "_variants");
 				Path revisionLocation = groundTruthLocation.resolve("R" + rev + "_variants");
 
@@ -77,7 +77,12 @@ public class MMMetricsComputationTest {
 				Map<String, Integer> differencesPerVariant = new HashMap<>();
 
 				for (Path variantLocation : variantLocations) {
-					Path previousVariantLocation = previousRevisionLocation.resolve(variantLocation.getFileName()).resolve("umloutput/umloutput.uml");
+					String variantLocationFileNameString = variantLocation.getFileName().toString();
+					Path previousVariantLocation = previousRevisionLocation.resolve(variantLocationFileNameString).resolve("umloutput/umloutput.uml");
+					while (!Files.exists(previousVariantLocation) && variantLocationFileNameString.indexOf("-") != -1) {
+						variantLocationFileNameString = variantLocationFileNameString.substring(0, variantLocationFileNameString.lastIndexOf("-"));
+						previousVariantLocation = previousRevisionLocation.resolve(variantLocationFileNameString).resolve("umloutput/umloutput.uml");
+					}
 					if (Files.exists(previousVariantLocation)) {
 						int numDiffs = this.compareModels(variantLocation.resolve("umloutput/umloutput.uml"), previousVariantLocation);
 
@@ -88,8 +93,8 @@ public class MMMetricsComputationTest {
 				revisionMap.add(differencesPerVariant);
 			}
 			// write results to csv file (product id; system revision; differences).
-			for (int rev = 2; rev <= 5; rev++) {
-				for (Map.Entry<String, Integer> entry : revisionMap.get(rev - 1 - 1).entrySet()) {
+			for (int rev = 1; rev <= 5; rev++) {
+				for (Map.Entry<String, Integer> entry : revisionMap.get(rev - 1).entrySet()) {
 					fw.write(entry.getKey() + ";" + rev + ";" + entry.getValue() + "\n");
 				}
 			}
