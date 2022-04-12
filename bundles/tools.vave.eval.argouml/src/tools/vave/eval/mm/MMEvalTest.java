@@ -628,10 +628,12 @@ public class MMEvalTest {
 
 				System.out.println("START REV 1 PROD 1");
 				// externalize empty product with expression TRUE
-				VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext-vsum\\src\\"));
+				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
+				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext"));
 
-				VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext-int-vsum\\src\\"));
+				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext-int-vsum\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE\\src\\"));
 				Variable<FeatureOption> expression = VavemodelFactory.eINSTANCE.createVariable();
