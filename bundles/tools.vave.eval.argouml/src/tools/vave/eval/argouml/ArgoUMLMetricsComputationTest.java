@@ -72,7 +72,7 @@ import tools.vave.uml.UMLMatchEngineFactory;
  * Computes the metrics used for the evaluation with ArgoUML. This involves a comparison of all generated variants with / without consistency preservation with the ground-truth variants by using EMFCompare.
  */
 //@Disabled
-public class MetricsComputationTest {
+public class ArgoUMLMetricsComputationTest {
 
 	@Test
 	public void dummytest() {

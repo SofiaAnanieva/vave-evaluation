@@ -84,20 +84,28 @@ import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualProductModelInitializer;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
-import tools.vitruv.variability.vave.impl.FeatureModel;
+import tools.vitruv.variability.vave.consistency.AffectedConfigurations;
+import tools.vitruv.variability.vave.consistency.ConsistencyRule;
+import tools.vitruv.variability.vave.consistency.DependencyLifting;
+import tools.vitruv.variability.vave.consistency.HintComputation;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
-import tools.vitruv.variability.vave.util.ExpressionPrinter;
-import vavemodel.Configuration;
-import vavemodel.Conjunction;
-import vavemodel.CrossTreeConstraint;
-import vavemodel.Expression;
-import vavemodel.Feature;
-import vavemodel.FeatureOption;
-import vavemodel.FeatureRevision;
-import vavemodel.SystemRevision;
-import vavemodel.TreeConstraint;
-import vavemodel.Variable;
-import vavemodel.VavemodelFactory;
+import tools.vitruv.variability.vave.model.expression.Conjunction;
+import tools.vitruv.variability.vave.model.expression.Expression;
+import tools.vitruv.variability.vave.model.expression.ExpressionFactory;
+import tools.vitruv.variability.vave.model.expression.Variable;
+import tools.vitruv.variability.vave.model.featuremodel.FeatureModel;
+import tools.vitruv.variability.vave.model.featuremodel.FeaturemodelFactory;
+import tools.vitruv.variability.vave.model.featuremodel.ViewCrossTreeConstraint;
+import tools.vitruv.variability.vave.model.featuremodel.ViewFeature;
+import tools.vitruv.variability.vave.model.featuremodel.ViewTreeConstraint;
+import tools.vitruv.variability.vave.model.vave.Configuration;
+import tools.vitruv.variability.vave.model.vave.Feature;
+import tools.vitruv.variability.vave.model.vave.FeatureOption;
+import tools.vitruv.variability.vave.model.vave.FeatureRevision;
+import tools.vitruv.variability.vave.model.vave.SystemRevision;
+import tools.vitruv.variability.vave.model.vave.VaveFactory;
+import tools.vitruv.variability.vave.util.ExpressionUtil;
+import tools.vitruv.variability.vave.util.FeatureModelUtil;
 
 @ExtendWith({ TestProjectManager.class, TestLogging.class, RegisterMetamodelsInStandalone.class })
 public class MMEvalTest {
@@ -165,7 +173,7 @@ public class MMEvalTest {
 				}
 			}
 
-		});
+		}, Arrays.asList(new ConsistencyRule[] { new DependencyLifting(), new HintComputation(), new AffectedConfigurations() }));
 
 		// set up jamopp
 		JavaClasspath.getInitializers().clear();
@@ -335,7 +343,7 @@ public class MMEvalTest {
 
 		// externalize product
 		System.out.println("EXTERNALIZING PRODUCT");
-		final VirtualProductModel vmp = vave.externalizeProduct(projectFolder.resolve("vsum" + (productNumber++)), configuration);
+		final VirtualProductModel vmp = vave.externalizeProduct(projectFolder.resolve("vsum" + (productNumber++)), configuration).getResult();
 
 		long timeDiff = System.currentTimeMillis() - timeStart;
 		System.out.println("TOTAL TIME EXTERNALIZATION: " + timeDiff);
@@ -512,7 +520,7 @@ public class MMEvalTest {
 
 		// internalize changes in product into system
 		System.out.println("INTERNALIZING CHANGES IN PRODUCT INTO SYSTEM");
-		FeatureModel repairedFM = vave.internalizeChanges(vmp2, e);
+		FeatureModel repairedFM = ((DependencyLifting.Result) vave.internalizeChanges(vmp2, e).getConsistencyResult(DependencyLifting.class)).getRepairedFeatureModel();
 		this.outputEvalFeatureModel(repairedFM);
 		// this.vave.internalizeDomain(repairedFM);
 
@@ -614,12 +622,13 @@ public class MMEvalTest {
 			System.out.println("START REV 1");
 
 			// internalize domain with just the feature and without any constraints
-			FeatureModel fm = new FeatureModel(null, null, new HashSet<FeatureOption>(), new HashSet<TreeConstraint>(), new HashSet<CrossTreeConstraint>());
-			Fcore = VavemodelFactory.eINSTANCE.createFeature();
-			Fcore.setName("Core");
-			fm.getFeatureOptions().add(Fcore);
+			FeatureModel fm = FeaturemodelFactory.eINSTANCE.createFeatureModel();
+			ViewFeature viewFcore = FeaturemodelFactory.eINSTANCE.createViewFeature();
+			viewFcore.setName("Core");
+//			fm.getRootFeatures().add(viewFcore);
+			fm.getFeatureOptions().add(viewFcore);
 			this.vave.internalizeDomain(fm);
-			Fcore = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Core")).findAny().get();
+			Fcore = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Core")).findAny().get();
 
 			FeatureModel repairedFM = null;
 
@@ -628,16 +637,16 @@ public class MMEvalTest {
 
 				System.out.println("START REV 1 PROD 1");
 				// externalize empty product with expression TRUE
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R1-V-CORE-empty-ext-int-vsum\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE\\src\\"));
-				Variable<FeatureOption> expression = VavemodelFactory.eINSTANCE.createVariable();
-				expression.setOption(Fcore);
+				Variable<FeatureOption> expression = ExpressionFactory.eINSTANCE.createVariable();
+				expression.setValue(Fcore);
 				repairedFM = this.internalize(vmp, vmp2, resources, expression);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R0-V-CORE-int"));
 
@@ -663,16 +672,16 @@ public class MMEvalTest {
 			System.out.println("START REV 2");
 
 			// internalize domain with just the features and without any constraints
-			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemrevision().get(this.vave.getSystem().getSystemrevision().size() - 1));
-			Flabel = VavemodelFactory.eINSTANCE.createFeature();
-			Flabel.setName("Label");
-			fm.getFeatureOptions().add(Flabel);
-			Fsortcount = VavemodelFactory.eINSTANCE.createFeature();
-			Fsortcount.setName("Sort");
-			fm.getFeatureOptions().add(Fsortcount);
+			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemRevisions().get(this.vave.getSystem().getSystemRevisions().size() - 1)).getResult();
+			ViewFeature viewFlabel = FeaturemodelFactory.eINSTANCE.createViewFeature();
+			viewFlabel.setName("Label");
+			fm.getFeatureOptions().add(viewFlabel);
+			ViewFeature viewFsortcount = FeaturemodelFactory.eINSTANCE.createViewFeature();
+			viewFsortcount.setName("Sort");
+			fm.getFeatureOptions().add(viewFsortcount);
 			this.vave.internalizeDomain(fm);
-			Flabel = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Label")).findAny().get();
-			Fsortcount = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Sort")).findAny().get();
+			Flabel = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Label")).findAny().get();
+			Fsortcount = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Sort")).findAny().get();
 
 			FeatureModel repairedFM = null;
 
@@ -680,17 +689,17 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 2 PROD 1");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R2-V-CORE-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R2-V-CORE-ext"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R2-V-CORE-ext-int-vsum\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Flabel);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Flabel);
 				this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-int"));
 
@@ -702,18 +711,18 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 2 PROD 2");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-ext"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-ext-int-vsum\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-SORT\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Fsortcount);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Fsortcount);
 				repairedFM = this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R2-V-CORE-LABEL-SORT-int"));
 
@@ -739,12 +748,12 @@ public class MMEvalTest {
 			System.out.println("START REV 3");
 
 			// internalize domain with just the features and without any constraints
-			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemrevision().get(this.vave.getSystem().getSystemrevision().size() - 1));
-			Ffav = VavemodelFactory.eINSTANCE.createFeature();
-			Ffav.setName("Fav");
-			fm.getFeatureOptions().add(Ffav);
+			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemRevisions().get(this.vave.getSystem().getSystemRevisions().size() - 1)).getResult();
+			ViewFeature viewFfav = FeaturemodelFactory.eINSTANCE.createViewFeature();
+			viewFfav.setName("Fav");
+			fm.getFeatureOptions().add(viewFfav);
 			this.vave.internalizeDomain(fm);
-			Ffav = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Fav")).findAny().get();
+			Ffav = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Fav")).findAny().get();
 
 			FeatureModel repairedFM = null;
 
@@ -752,18 +761,18 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 3 PROD 1");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext-int-vsum\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Fcore);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Fcore);
 				this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-int"));
 
@@ -775,18 +784,18 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 3 PROD 2");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext-vsum2\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext2"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-ext-int-vsum2\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-FAV\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Ffav);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Ffav);
 				repairedFM = this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R3-V-CORE-LABEL-FAV-int"));
 
@@ -811,12 +820,12 @@ public class MMEvalTest {
 			Path revisionVariantsLocation = variantsLocation.resolve("R4_variants");
 			System.out.println("START REV 4");
 
-			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemrevision().get(this.vave.getSystem().getSystemrevision().size() - 1));
-			Fcopy = VavemodelFactory.eINSTANCE.createFeature();
-			Fcopy.setName("Copy");
-			fm.getFeatureOptions().add(Fcopy);
+			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemRevisions().get(this.vave.getSystem().getSystemRevisions().size() - 1)).getResult();
+			ViewFeature viewFcopy = FeaturemodelFactory.eINSTANCE.createViewFeature();
+			viewFcopy.setName("Copy");
+			fm.getFeatureOptions().add(viewFcopy);
 			this.vave.internalizeDomain(fm);
-			Fcopy = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Copy")).findAny().get();
+			Fcopy = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Copy")).findAny().get();
 
 			FeatureModel repairedFM = null;
 
@@ -824,18 +833,18 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 4 PROD 1");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-int-vsum\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Fcore);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Fcore);
 				this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-int"));
 
@@ -847,19 +856,19 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 4 PROD 2");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Fsortcount.getFeaturerevision().get(Fsortcount.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Fsortcount.getFeatureRevisions().get(Fsortcount.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum2\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext2"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-int-vsum2\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-SORT\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Fsortcount);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Fsortcount);
 				this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-int"));
 
@@ -871,19 +880,19 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 4 PROD 3");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Ffav.getFeaturerevision().get(Ffav.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Ffav.getFeatureRevisions().get(Ffav.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum3\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext3"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-int-vsum3\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-FAV\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Ffav);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Ffav);
 				this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-FAV-int"));
 
@@ -895,25 +904,25 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 4 PROD 4");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Fsortcount.getFeaturerevision().get(Fsortcount.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Ffav.getFeaturerevision().get(Ffav.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Fsortcount.getFeatureRevisions().get(Fsortcount.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Ffav.getFeatureRevisions().get(Ffav.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-ext"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-ext-int-vsum\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-SORT-FAV\\src\\"));
-				Conjunction<FeatureOption> conjunction = VavemodelFactory.eINSTANCE.createConjunction();
-				Variable<FeatureOption> variable1 = VavemodelFactory.eINSTANCE.createVariable();
-				variable1.setOption(Fsortcount);
-				Variable<FeatureOption> variable2 = VavemodelFactory.eINSTANCE.createVariable();
-				variable2.setOption(Ffav);
-				conjunction.getTerm().add(variable1);
-				conjunction.getTerm().add(variable2);
+				Conjunction<FeatureOption> conjunction = ExpressionFactory.eINSTANCE.createConjunction();
+				Variable<FeatureOption> variable1 = ExpressionFactory.eINSTANCE.createVariable();
+				variable1.setValue(Fsortcount);
+				Variable<FeatureOption> variable2 = ExpressionFactory.eINSTANCE.createVariable();
+				variable2.setValue(Ffav);
+				conjunction.getExpressions().add(variable1);
+				conjunction.getExpressions().add(variable2);
 				this.internalize(vmp, vmp2, resources, conjunction);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-SORT-FAV-int"));
 
@@ -925,18 +934,18 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 4 PROD 5");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-vsum4\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext4"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-ext-int-vsum4\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-COPY\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Fcopy);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Fcopy);
 				repairedFM = this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R4-V-CORE-LABEL-COPY-int"));
 
@@ -961,12 +970,12 @@ public class MMEvalTest {
 			Path revisionVariantsLocation = variantsLocation.resolve("R5_variants");
 			System.out.println("START REV 5");
 
-			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemrevision().get(this.vave.getSystem().getSystemrevision().size() - 1));
-			Fsms = VavemodelFactory.eINSTANCE.createFeature();
-			Fsms.setName("SMS");
-			fm.getFeatureOptions().add(Fsms);
+			FeatureModel fm = this.vave.externalizeDomain(this.vave.getSystem().getSystemRevisions().get(this.vave.getSystem().getSystemRevisions().size() - 1)).getResult();
+			ViewFeature viewFsms = FeaturemodelFactory.eINSTANCE.createViewFeature();
+			viewFsms.setName("SMS");
+			fm.getFeatureOptions().add(viewFsms);
 			this.vave.internalizeDomain(fm);
-			Fsms = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("SMS")).findAny().get();
+			Fsms = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("SMS")).findAny().get();
 
 			FeatureModel repairedFM = null;
 
@@ -974,18 +983,18 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 5 PROD 1");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-ext"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-ext-int-vsum\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Fcore);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Fcore);
 				this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-int"));
 
@@ -997,19 +1006,19 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 5 PROD 2");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Fcopy.getFeaturerevision().get(Fcopy.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Fcopy.getFeatureRevisions().get(Fcopy.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext-int-vsum\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-COPY\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Fcopy);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Fcopy);
 				this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-int"));
 
@@ -1021,19 +1030,19 @@ public class MMEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 5 PROD 3");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1));
-				configuration.getOption().add(Fcopy.getFeaturerevision().get(Fcopy.getFeaturerevision().size() - 1));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(vave.getSystem().getSystemrevision().size() - 1));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(Fcopy.getFeatureRevisions().get(Fcopy.getFeatureRevisions().size() - 1));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(vave.getSystem().getSystemRevisions().size() - 1));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext-vsum2\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext2"));
 
 				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-ext-int-vsum2\\src\\"));
 
 				Collection<Resource> resources = this.parse(revisionVariantsLocation.resolve("V-CORE-LABEL-COPY-SMS\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Fsms);
+				Variable<FeatureOption> variable = ExpressionFactory.eINSTANCE.createVariable();
+				variable.setValue(Fsms);
 				repairedFM = this.internalize(vmp, vmp2, resources, variable);
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R5-V-CORE-LABEL-COPY-SMS-int"));
 
@@ -1061,14 +1070,14 @@ public class MMEvalTest {
 			System.out.println("FEATURE MODEL: NULL");
 		else {
 			System.out.println("FEATURE MODEL:");
-			System.out.println("ROOT FEATURE: " + repairedFM.getRootFeature());
+			System.out.println("ROOT FEATURE: " + repairedFM.getRootFeatures().get(0));
 			System.out.println("TREE CONSTRAINTS:");
-			for (TreeConstraint tc : repairedFM.getTreeConstraints()) {
-				System.out.println(((Feature) tc.eContainer()).getName() + " -> " + tc.getType() + " -> {" + tc.getFeature().stream().map(f -> f.getName()).collect(Collectors.joining(", ")) + "}");
+			for (ViewTreeConstraint tc : FeatureModelUtil.collectTreeConstraints(repairedFM)) {
+				System.out.println(tc.getParentFeature().getOriginalFeature().getName() + " -> " + tc.getType() + " -> {" + tc.getChildFeatures().stream().map(f -> f.getName()).collect(Collectors.joining(", ")) + "}");
 			}
 			System.out.println("CROSS-TREE CONSTRAINTS:");
-			for (CrossTreeConstraint ctc : repairedFM.getCrossTreeConstraints()) {
-				System.out.println(new ExpressionPrinter().doSwitch(ctc.getExpression()));
+			for (ViewCrossTreeConstraint ctc : repairedFM.getCrossTreeConstraints()) {
+				System.out.println(ExpressionUtil.toString(ctc.getExpression()));
 			}
 		}
 	}
@@ -1076,28 +1085,28 @@ public class MMEvalTest {
 	private void createEvalVariants(Path targetLocation) throws Exception {
 		System.out.println("CREATING EVAL VARIANTS");
 
-		SystemRevision latestSysRev = this.vave.getSystem().getSystemrevision().get(this.vave.getSystem().getSystemrevision().size() - 1);
+		SystemRevision latestSysRev = this.vave.getSystem().getSystemRevisions().get(this.vave.getSystem().getSystemRevisions().size() - 1);
 		// optional features
-		List<Feature> optionalFeatures = this.vave.getSystem().getFeature().stream().filter(f -> !f.getName().equals("Core") && !f.getName().equals("Label")).collect(Collectors.toList());
+		List<Feature> optionalFeatures = this.vave.getSystem().getFeatures().stream().filter(f -> !f.getName().equals("Core") && !f.getName().equals("Label")).collect(Collectors.toList());
 		// core features
-		Feature Fcore = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Core")).findFirst().get();
-		FeatureRevision coreFeatureRev = Fcore.getFeaturerevision().get(Fcore.getFeaturerevision().size() - 1);
+		Feature Fcore = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Core")).findFirst().get();
+		FeatureRevision coreFeatureRev = Fcore.getFeatureRevisions().get(Fcore.getFeatureRevisions().size() - 1);
 		Feature Flabel = null;
 		FeatureRevision labelFeatureRev = null;
-		Optional<Feature> FlabelOpt = this.vave.getSystem().getFeature().stream().filter(f -> f.getName().equals("Label")).findFirst();
+		Optional<Feature> FlabelOpt = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Label")).findFirst();
 		if (FlabelOpt.isPresent()) {
 			Flabel = FlabelOpt.get();
-			labelFeatureRev = Flabel.getFeaturerevision().get(Flabel.getFeaturerevision().size() - 1);
+			labelFeatureRev = Flabel.getFeatureRevisions().get(Flabel.getFeatureRevisions().size() - 1);
 		}
 
 		// only core
 		try {
-			Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-			config.getOption().add(latestSysRev);
-			config.getOption().add(coreFeatureRev);
+			Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+			config.getOptions().add(latestSysRev);
+			config.getOptions().add(coreFeatureRev);
 			String fileName = "V-CORE";
 			if (Flabel != null) {
-				config.getOption().add(labelFeatureRev);
+				config.getOptions().add(labelFeatureRev);
 				fileName += "-LABEL";
 			}
 			this.externalize(config, targetLocation.resolve(fileName + "-vsum"));
@@ -1111,12 +1120,12 @@ public class MMEvalTest {
 			for (Feature optionalFeature : optionalFeatures) {
 				try {
 					if (!optionalFeature.getName().equals("SMS")) {
-						Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-						config.getOption().add(latestSysRev);
-						config.getOption().add(coreFeatureRev);
+						Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+						config.getOptions().add(latestSysRev);
+						config.getOptions().add(coreFeatureRev);
 						if (Flabel != null)
-							config.getOption().add(labelFeatureRev);
-						config.getOption().add(optionalFeature.getFeaturerevision().get(optionalFeature.getFeaturerevision().size() - 1));
+							config.getOptions().add(labelFeatureRev);
+						config.getOptions().add(optionalFeature.getFeatureRevisions().get(optionalFeature.getFeatureRevisions().size() - 1));
 						this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeature.getName().toUpperCase() + "-vsum"));
 						Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeature.getName().toUpperCase()));
 					}
@@ -1132,13 +1141,13 @@ public class MMEvalTest {
 				for (int j = i + 1; j < optionalFeatures.size(); j++) {
 					try {
 						if (!(optionalFeatures.get(i).getName().equals("SMS") && !optionalFeatures.get(j).getName().equals("Copy") || optionalFeatures.get(j).getName().equals("SMS") && !optionalFeatures.get(i).getName().equals("Copy"))) {
-							Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-							config.getOption().add(latestSysRev);
-							config.getOption().add(coreFeatureRev);
+							Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+							config.getOptions().add(latestSysRev);
+							config.getOptions().add(coreFeatureRev);
 							if (Flabel != null)
-								config.getOption().add(labelFeatureRev);
-							config.getOption().add(optionalFeatures.get(i).getFeaturerevision().get(optionalFeatures.get(i).getFeaturerevision().size() - 1));
-							config.getOption().add(optionalFeatures.get(j).getFeaturerevision().get(optionalFeatures.get(j).getFeaturerevision().size() - 1));
+								config.getOptions().add(labelFeatureRev);
+							config.getOptions().add(optionalFeatures.get(i).getFeatureRevisions().get(optionalFeatures.get(i).getFeatureRevisions().size() - 1));
+							config.getOptions().add(optionalFeatures.get(j).getFeatureRevisions().get(optionalFeatures.get(j).getFeatureRevisions().size() - 1));
 							this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-vsum"));
 							Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase()));
 						}
@@ -1157,14 +1166,14 @@ public class MMEvalTest {
 						try {
 							List<String> optionalFeaturesList = Arrays.asList(optionalFeatures.get(i).getName(), optionalFeatures.get(j).getName(), optionalFeatures.get(k).getName());
 							if (!(optionalFeaturesList.contains("SMS") && !optionalFeaturesList.contains("Copy"))) {
-								Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-								config.getOption().add(latestSysRev);
-								config.getOption().add(coreFeatureRev);
+								Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+								config.getOptions().add(latestSysRev);
+								config.getOptions().add(coreFeatureRev);
 								if (Flabel != null)
-									config.getOption().add(labelFeatureRev);
-								config.getOption().add(optionalFeatures.get(i).getFeaturerevision().get(optionalFeatures.get(i).getFeaturerevision().size() - 1));
-								config.getOption().add(optionalFeatures.get(j).getFeaturerevision().get(optionalFeatures.get(j).getFeaturerevision().size() - 1));
-								config.getOption().add(optionalFeatures.get(k).getFeaturerevision().get(optionalFeatures.get(k).getFeaturerevision().size() - 1));
+									config.getOptions().add(labelFeatureRev);
+								config.getOptions().add(optionalFeatures.get(i).getFeatureRevisions().get(optionalFeatures.get(i).getFeatureRevisions().size() - 1));
+								config.getOptions().add(optionalFeatures.get(j).getFeatureRevisions().get(optionalFeatures.get(j).getFeatureRevisions().size() - 1));
+								config.getOptions().add(optionalFeatures.get(k).getFeatureRevisions().get(optionalFeatures.get(k).getFeatureRevisions().size() - 1));
 								this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-" + optionalFeatures.get(k).getName().toUpperCase() + "-vsum"));
 								Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.get(i).getName().toUpperCase() + "-" + optionalFeatures.get(j).getName().toUpperCase() + "-" + optionalFeatures.get(k).getName().toUpperCase()));
 							}
@@ -1179,13 +1188,13 @@ public class MMEvalTest {
 		// all features
 		if (optionalFeatures.size() >= 4) {
 			try {
-				Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-				config.getOption().add(latestSysRev);
-				config.getOption().add(coreFeatureRev);
+				Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+				config.getOptions().add(latestSysRev);
+				config.getOptions().add(coreFeatureRev);
 				if (Flabel != null)
-					config.getOption().add(labelFeatureRev);
-				config.getOption().addAll(optionalFeatures.stream().map(f -> {
-					return f.getFeaturerevision().get(f.getFeaturerevision().size() - 1);
+					config.getOptions().add(labelFeatureRev);
+				config.getOptions().addAll(optionalFeatures.stream().map(f -> {
+					return f.getFeatureRevisions().get(f.getFeatureRevisions().size() - 1);
 				}).collect(Collectors.toList()));
 				this.externalize(config, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.stream().map(f -> f.getName().toUpperCase()).collect(Collectors.joining("-")) + "-vsum"));
 				Files.move(vaveResourceLocation, targetLocation.resolve("V-CORE-LABEL-" + optionalFeatures.stream().map(f -> f.getName().toUpperCase()).collect(Collectors.joining("-"))));

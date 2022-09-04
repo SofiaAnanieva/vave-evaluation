@@ -1,4 +1,4 @@
-package tools.vave.eval.argouml;
+package tools.vave.eval.argouml.old;
 
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -38,9 +38,11 @@ import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
-import vavemodel.Configuration;
-import vavemodel.FeatureOption;
-import vavemodel.VavemodelFactory;
+import tools.vitruv.variability.vave.model.expression.ExpressionFactory;
+import tools.vitruv.variability.vave.model.expression.True;
+import tools.vitruv.variability.vave.model.vave.Configuration;
+import tools.vitruv.variability.vave.model.vave.FeatureOption;
+import tools.vitruv.variability.vave.model.vave.VaveFactory;
 
 /**
  * This test is for the new version of JaMoPP which is currently not supported by the Vitruv Java Domain and therefore disabled.
@@ -226,8 +228,8 @@ public class JamoppNewTest {
 //		List<Diff> differences = comparison.getDifferences();
 
 		// ...
-		Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config);
+		Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config).getResult();
 
 		final ResourceSet resourceSet = ResourceSetUtil.withGlobalFactories(new ResourceSetImpl());
 		final ChangeRecorder changeRecorder = new ChangeRecorder(resourceSet);
@@ -245,7 +247,7 @@ public class JamoppNewTest {
 		// propagate recorded changes into vmp1
 		vmp1.propagateChange(recordedChange);
 
-		vavemodel.True<FeatureOption> trueConstant = VavemodelFactory.eINSTANCE.createTrue();
+		True<FeatureOption> trueConstant = ExpressionFactory.eINSTANCE.createTrue();
 		vave.internalizeChanges(vmp1, trueConstant); // system revision 1
 
 	}

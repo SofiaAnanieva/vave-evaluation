@@ -1,4 +1,4 @@
-package tools.vave.eval.argouml;
+package tools.vave.eval.argouml.old;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

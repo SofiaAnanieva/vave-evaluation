@@ -1,4 +1,4 @@
-package tools.vave.eval.argouml;
+package tools.vave.eval.argouml.old;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -54,9 +54,11 @@ import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
-import vavemodel.Configuration;
-import vavemodel.FeatureOption;
-import vavemodel.VavemodelFactory;
+import tools.vitruv.variability.vave.model.expression.ExpressionFactory;
+import tools.vitruv.variability.vave.model.expression.True;
+import tools.vitruv.variability.vave.model.vave.Configuration;
+import tools.vitruv.variability.vave.model.vave.FeatureOption;
+import tools.vitruv.variability.vave.model.vave.VaveFactory;
 
 @ExtendWith({ TestProjectManager.class, TestLogging.class, RegisterMetamodelsInStandalone.class })
 @Disabled
@@ -139,8 +141,8 @@ public class JamoppTest {
 		List<Diff> differences = comparison.getDifferences();
 
 		// create config and externalize product
-		Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config);
+		Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config).getResult();
 
 		// final ResourceSet resourceSet = ResourceSetUtil.withGlobalFactories(new ResourceSetImpl());
 		final ResourceSet resourceSet = dummyResourceSet;
@@ -157,7 +159,7 @@ public class JamoppTest {
 		// propagate recorded changes into vmp1
 		vmp1.propagateChange(recordedChange);
 
-		vavemodel.True<FeatureOption> trueConstant = VavemodelFactory.eINSTANCE.createTrue();
+		True<FeatureOption> trueConstant = ExpressionFactory.eINSTANCE.createTrue();
 		vave.internalizeChanges(vmp1, trueConstant); // system revision 1
 	}
 
@@ -221,15 +223,15 @@ public class JamoppTest {
 		final TransactionalChange recordedChange = changeRecorder.endRecording();
 
 		// ...
-		Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config);
+		Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config).getResult();
 
 		// propagate recorded changes into vmp1
 		vmp1.propagateChange(recordedChange);
 //		vmp1.propagateChange(recordedChange2);
 		// vmp1.propagateChangedState(javaR1AllR);
 
-		vavemodel.True<FeatureOption> trueConstant = VavemodelFactory.eINSTANCE.createTrue();
+		True<FeatureOption> trueConstant = ExpressionFactory.eINSTANCE.createTrue();
 		vave.internalizeChanges(vmp1, trueConstant); // system revision 1
 
 		// TODO: do the second revision!
@@ -305,13 +307,13 @@ public class JamoppTest {
 		final TransactionalChange recordedChange = changeRecorder.endRecording();
 
 		// ...
-		Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config);
+		Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config).getResult();
 
 		// propagate recorded changes into vmp1
 		vmp1.propagateChange(recordedChange);
 
-		vavemodel.True<FeatureOption> trueConstant = VavemodelFactory.eINSTANCE.createTrue();
+		True<FeatureOption> trueConstant = ExpressionFactory.eINSTANCE.createTrue();
 		vave.internalizeChanges(vmp1, trueConstant); // system revision 1
 	}
 
@@ -378,8 +380,8 @@ public class JamoppTest {
 		final TransactionalChange recordedChange = changeRecorder.endRecording();
 
 		// ...
-		Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config);
+		Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config).getResult();
 
 		// BEGIN CHANGE ORDER TEST
 
@@ -410,7 +412,7 @@ public class JamoppTest {
 		// propagate recorded changes into vmp1
 		vmp1.propagateChange(orderedChange);
 
-		vavemodel.True<FeatureOption> trueConstant = VavemodelFactory.eINSTANCE.createTrue();
+		True<FeatureOption> trueConstant = ExpressionFactory.eINSTANCE.createTrue();
 		vave.internalizeChanges(vmp1, trueConstant); // system revision 1
 
 		// TODO: do the second revision!
@@ -503,13 +505,13 @@ public class JamoppTest {
 		final TransactionalChange recordedChange = changeRecorder.endRecording();
 
 		// ...
-		Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config);
+		Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config).getResult();
 
 		// propagate recorded changes into vmp1
 		vmp1.propagateChange(recordedChange);
 
-		vavemodel.True<FeatureOption> trueConstant = VavemodelFactory.eINSTANCE.createTrue();
+		True<FeatureOption> trueConstant = ExpressionFactory.eINSTANCE.createTrue();
 		vave.internalizeChanges(vmp1, trueConstant); // system revision 1
 	}
 

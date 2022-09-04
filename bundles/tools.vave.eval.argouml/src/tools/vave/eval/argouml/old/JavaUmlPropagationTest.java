@@ -1,5 +1,9 @@
-package tools.vave.eval.argouml;
+package tools.vave.eval.argouml.old;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,8 +33,11 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.uml2.uml.Model;
+import org.eclipse.uml2.uml.ParameterDirectionKind;
 import org.emftext.language.java.JavaClasspath;
 import org.emftext.language.java.JavaPackage;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -58,19 +65,14 @@ import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
-import vavemodel.Configuration;
-import vavemodel.FeatureOption;
-import vavemodel.VavemodelFactory;
+import tools.vitruv.variability.vave.model.vave.Configuration;
+import tools.vitruv.variability.vave.model.vave.VaveFactory;
 
-/**
- * Experiments with ArgoUML, JaMoPP, EMFCompare, and Vitruv Java-UML consistency preservation.
- */
 @ExtendWith({ TestProjectManager.class, TestLogging.class, RegisterMetamodelsInStandalone.class })
-//@Disabled
-public class ArgoUMLTest {
+public class JavaUmlPropagationTest {
 
 	@Test
-	// @Disabled
+	@Disabled
 	public void singleRevisionTest(@TestProject final Path projectFolder) throws Exception {
 		System.out.println("MAX HEAP: " + Runtime.getRuntime().maxMemory());
 
@@ -103,13 +105,9 @@ public class ArgoUMLTest {
 		// register jar files
 		System.out.println("REGISTERING JAR FILES");
 		JavaClasspath cp = JavaClasspath.get(resourceSet);
-		cp.registerClassifierJar(URI.createFileURI(Paths.get("C:\\FZI\\argouml\\jars\\rt.jar").toString()));
-//		FileSystem fs = FileSystems.getFileSystem(java.net.URI.create("jrt:/"));
-//		Path objClassFilePath = fs.getPath("modules", "java.beans", "java/beans/Object.class");
-//		cp.registerClassifierJar(URI.createFileURI(Paths.get("C:\\FZI\\argouml\\jars\\sax2.jar").toString()));
+		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\rt.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
-		// Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\argouml\\argouml\\src\\argouml-core-infra\\lib"), Paths.get("C:\\FZI\\argouml\\argouml\\src\\argouml-core-model-euml\\lib"), Paths.get("C:\\FZI\\argouml\\argouml\\src\\argouml-core-model-mdr\\lib") };
-		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\argouml\\argouml\\src\\") };
+		Path[] libraryFolders = new Path[] {};
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
 				if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {
@@ -124,32 +122,22 @@ public class ArgoUMLTest {
 
 		// collect files to parse
 		List<Path> javaFiles = new ArrayList<>();
-//		Path location = Paths.get("C:\\FZI\\git\\argouml-spl-revisions-variants-selection\\R0_variants\\V-LOGG\\src");
-//		Path[] sourceFolders = new Path[] { location.resolve("argouml-core-model\\src"), location.resolve("argouml-core-model-euml\\src"), Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model-mdr\\build\\java"), location.resolve("argouml-core-model-mdr\\src"),
-////				location.resolve("argouml-app\\src"), location.resolve("argouml-core-diagrams-sequence2\\src") 
-//		};
-		Path[] sourceFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model\\src"), Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model-euml\\src"), Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model-mdr\\build\\java"), Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model-mdr\\src"),
-//				Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-app\\src"), Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-diagrams-sequence2\\src")
-				// , Paths.get("C:\\FZI\\argouml\\argouml\\src\\argouml-core-umlpropertypanels\\src")
-		};
-//		Path[] sourceFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model\\src"), Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model-euml\\src"), Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model-mdr\\build\\java"), Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model-mdr\\src") };
-//		Path[] sourceFolders = new Path[] { Paths.get("testsrc7/p1"), Paths.get("testsrc7/p2") };
-//		Path[] sourceFolders = new Path[] { Paths.get("testsrc8") };
+		Path[] sourceFolders = new Path[] { Paths.get("testsrc4") };
 		for (Path sourceFolder : sourceFolders) {
 			Files.walk(sourceFolder).forEach(f -> {
 				if (Files.isDirectory(f) && !f.equals(sourceFolder) && !f.getFileName().toString().startsWith(".") && !f.getFileName().toString().equals("META-INF") && !f.getFileName().toString().equals("test_project.marker_vitruv") && !f.getFileName().toString().equals("umloutput") && !f.getFileName().toString().contains("-") && !f.getFileName().toString().startsWith("build-eclipse")
 						&& !f.getFileName().toString().startsWith("bin") && !f.getFileName().toString().startsWith("template")) {
-//					Path packageInfoPath = f.resolve(Paths.get("package-info.java"));
-//					try {
-//						if (!Files.exists(packageInfoPath)) {
-//							Files.createFile(packageInfoPath);
-//							Files.writeString(packageInfoPath, "package " + sourceFolder.relativize(f).toString().replace(java.io.File.separator, ".") + ";");
-//						}
-//						javaFiles.add(packageInfoPath);
-//						System.out.println("ADDED PACKAGE INFO FILE: " + packageInfoPath);
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
+					Path packageInfoPath = f.resolve(Paths.get("package-info.java"));
+					try {
+						if (!Files.exists(packageInfoPath)) {
+							Files.createFile(packageInfoPath);
+							Files.writeString(packageInfoPath, "package " + sourceFolder.relativize(f).toString().replace(java.io.File.separator, ".") + ";");
+						}
+						javaFiles.add(packageInfoPath);
+						System.out.println("ADDED PACKAGE INFO FILE: " + packageInfoPath);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 				} else if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".java") && !f.getFileName().toString().equals("package-info.java")) {
 					javaFiles.add(f);
 					System.out.println("ADDED JAVA FILE: " + f);
@@ -164,96 +152,19 @@ public class ArgoUMLTest {
 		List<Object[]> runtimemap = new ArrayList<>();
 		List<ResourceSet> resourceSets = new ArrayList<>();
 		List<Resource> resources = new ArrayList<>();
-//		// workaround: parse GenericArgoMenuBar.java first
-//		long timeStart = System.currentTimeMillis();
-//		Path problematicFile = Paths.get("C:\\FZI\\argouml\\argouml\\src\\argouml-app\\src\\org\\argouml\\ui\\cmd\\GenericArgoMenuBar.java");
-//		System.out.println("FILE: " + problematicFile);
-//		resources.add(resourceSet.getResource(URI.createFileURI(problematicFile.toString()), true));
-//		javaFiles.remove(javaFiles.indexOf(problematicFile));
-//		long timeDiff = System.currentTimeMillis() - timeStart;
-//		System.out.println("TIME: " + timeDiff);
 		for (Path javaFile : javaFiles) {
 			System.out.println("FILE: " + javaFile);
-//			// workaround attempt for slow parsing
-//			ResourceSet resourceSet = ResourceSetUtil.withGlobalFactories(new ResourceSetImpl());
-//			resourceSet.getLoadOptions().put("DISABLE_LAYOUT_INFORMATION_RECORDING", Boolean.TRUE);
-//			resourceSet.getLoadOptions().put("DISABLE_LOCATION_MAP", Boolean.TRUE);
-
-			for (Resource resource : resourceSet.getResources()) {
-				if (resource.getURI().toString().contains(javaFile.getFileName().toString()) && resource.getURI().toString().contains("pathmap")) {
-					System.out.println("FFF: " + javaFile.getFileName().toString() + " / " + resource.getURI());
-					System.out.println("RESOLVED: " +  resourceSet.getURIConverter().getURIMap().get(resource.getURI()));
-				}
-			}
-			
 			long localTimeStart = System.currentTimeMillis();
 			Resource resource = resourceSet.getResource(URI.createFileURI(javaFile.toString()), true);
 			long localTimeDiff = System.currentTimeMillis() - localTimeStart;
 			runtimemap.add(new Object[] { localTimeDiff, javaFile.toString() });
 
 			resources.add(resource);
-//			resourceSets.add(resourceSet);
-
-			for (Resource resource2 : resourceSet.getResources()) {
-				if (resource2.getURI().toString().contains(javaFile.getFileName().toString()) && resource2.getURI().toString().contains("pathmap")) {
-					System.out.println("GGG: " + resource2.getURI());
-					System.out.println("RESOLVED2: " +  resourceSet.getURIConverter().getURIMap().get(resource.getURI()));
-				}
-			}
-			
-		}
-
-//		// workaround attempt for slow parsing: merge all resources into a single resource set to use from here onward
-//		ResourceSet resourceSet = ResourceSetUtil.withGlobalFactories(new ResourceSetImpl());
-//		resourceSet.getLoadOptions().put("DISABLE_LAYOUT_INFORMATION_RECORDING", Boolean.TRUE);
-//		resourceSet.getLoadOptions().put("DISABLE_LOCATION_MAP", Boolean.TRUE);
-//		for (ResourceSet tempResourceSet : resourceSets) {
-//			resourceSet.getResources().addAll(tempResourceSet.getResources());
-//		}
-
-		System.out.println("NUM RESOURCES PARSED: " + resources.size());
-
-		System.out.println("NUM RESOURCES IN RS: " + resourceSet.getResources().size());
-
-		for (Resource resource : resources) {
-			if (resource.getURI().toString().contains("argouml") && resource.getURI().toString().contains("pathmap"))
-				System.out.println("DDD: " + resource.getURI());
-		}
-
-		for (Resource resource : resourceSet.getResources()) {
-			if (resource.getURI().toString().contains("argouml") && resource.getURI().toString().contains("pathmap"))
-				System.out.println("EEE: " + resource.getURI());
 		}
 
 		// resolve proxies
 		System.out.println("RESOLVING PROXIES");
 		resolveAllProxies(resourceSet);
-
-//		// change uri of resources
-//		final Path vaveResourceLocation = Paths.get("C:\\FZI\\vave-resource-location");
-//		final Path extCodeLocation = Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\argouml-core-model-mdr\\build\\java");
-//		for (Resource resource : resources) {
-//			Path relativeResourcePath = null;
-//			Path resourcePath = Paths.get(resource.getURI().toFileString());
-//			if (resourcePath.startsWith(location))
-//				relativeResourcePath = location.relativize(resourcePath);
-//			else if (resourcePath.startsWith(extCodeLocation)) {
-//				relativeResourcePath = Paths.get("src-ext").resolve(extCodeLocation.relativize(resourcePath));
-//			}
-//				
-//			URI vaveURI = URI.createFileURI(vaveResourceLocation.resolve(relativeResourcePath).toString());
-//			System.out.println("URI: " + vaveURI);
-//			resource.setURI(vaveURI);
-//		}
-		
-		System.out.println("NUM RESOURECES AFTER PROXY RESOLUTIONS: " + resources.size());
-
-		System.out.println("NUM RESOURCES IN RS AFTER PROXY RESOLUTIONS: " + resourceSet.getResources().size());
-
-		for (Resource resource : resourceSet.getResources()) {
-			if (resource.getURI().toString().contains("argouml") && resource.getURI().toString().contains("pathmap"))
-				System.out.println("CCC: " + resource.getURI());
-		}
 
 		List<Object[]> sortedRuntimeList = runtimemap.stream().sorted((o1, o2) -> Long.valueOf(((Long) o1[0]) - ((Long) o2[0])).intValue()).collect(Collectors.toList());
 		for (Object[] entry : sortedRuntimeList) {
@@ -265,8 +176,8 @@ public class ArgoUMLTest {
 
 		// externalize product
 		System.out.println("EXTERNALIZING PRODUCT");
-		Configuration config = VavemodelFactory.eINSTANCE.createConfiguration();
-		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config);
+		Configuration config = VaveFactory.eINSTANCE.createConfiguration();
+		final VirtualProductModel vmp1 = vave.externalizeProduct(projectFolder.resolve("vsum"), config).getResult();
 
 		// diff changes
 		System.out.println("DIFFING");
@@ -326,12 +237,33 @@ public class ArgoUMLTest {
 		System.out.println("PROPAGATING CHANGES INTO PRODUCT");
 		vmp1.propagateChange(orderedChange);
 
-		// internalize changes in product into system
-		System.out.println("INTERNALIZING CHANGES IN PRODUCT INTO SYSTEM");
-		vavemodel.True<FeatureOption> trueConstant = VavemodelFactory.eINSTANCE.createTrue();
-		vave.internalizeChanges(vmp1, trueConstant); // system revision 1
+//		// internalize changes in product into system
+//		System.out.println("INTERNALIZING CHANGES IN PRODUCT INTO SYSTEM");
+//		vavemodel.True<FeatureOption> trueConstant = VavemodelFactory.eINSTANCE.createTrue();
+//		vave.internalizeChanges(vmp1, trueConstant); // system revision 1
 
 		System.out.println("DONE");
+
+		ResourceSet assertRS = ResourceSetUtil.withGlobalFactories(new ResourceSetImpl());
+		Resource assertR = assertRS.getResource(URI.createFileURI("testsrc4/umloutput/umloutput.uml"), true);
+
+		Model eModel = (Model) assertR.getContents().get(0);
+		org.eclipse.uml2.uml.Package ePackage = (org.eclipse.uml2.uml.Package) eModel.getPackagedElements().get(0);
+		org.eclipse.uml2.uml.Class eClass = (org.eclipse.uml2.uml.Class) ePackage.getPackagedElements().get(0);
+		org.eclipse.uml2.uml.Operation eOperation = (org.eclipse.uml2.uml.Operation) eClass.getMembers().get(0);
+		org.eclipse.uml2.uml.Parameter eReturnParameter = (org.eclipse.uml2.uml.Parameter) eOperation.getOwnedParameters().get(0);
+		org.eclipse.uml2.uml.Parameter eFirstParameter = (org.eclipse.uml2.uml.Parameter) eOperation.getOwnedParameters().get(1);
+		org.eclipse.uml2.uml.Parameter eSecondParameter = (org.eclipse.uml2.uml.Parameter) eOperation.getOwnedParameters().get(2);
+
+		assertTrue(eReturnParameter.getDirection() == ParameterDirectionKind.RETURN_LITERAL);
+		assertTrue(eFirstParameter.getDirection() == ParameterDirectionKind.IN_LITERAL);
+		assertTrue(eSecondParameter.getDirection() == ParameterDirectionKind.IN_LITERAL);
+
+		assertNotNull(eSecondParameter.getType()); // success (should be String)
+		assertNotNull(eFirstParameter.getType()); // fail (should be Object)
+		assertNotNull(eReturnParameter.getType()); // fail (should be Object)
+
+		// TODO: delete created output model file (testsrc4/umloutput/umloutput.uml) before every run or it will fail!
 	}
 
 	protected static void resolveAllProxies(ResourceSet rs) {

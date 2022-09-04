@@ -77,8 +77,8 @@ import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualProductModelInitializer;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
-import vavemodel.Configuration;
-import vavemodel.VavemodelFactory;
+import tools.vitruv.variability.vave.model.vave.Configuration;
+import tools.vitruv.variability.vave.model.vave.VaveFactory;
 
 public class MMVitruvGroundTruthGeneratorTest {
 
@@ -311,7 +311,7 @@ public class MMVitruvGroundTruthGeneratorTest {
 
 		// externalize product
 		System.out.println("EXTERNALIZING PRODUCT");
-		final VirtualProductModel vmp = vave.externalizeProduct(projectFolder.resolve("vsum" + (productNumber++)), configuration);
+		final VirtualProductModel vmp = vave.externalizeProduct(projectFolder.resolve("vsum" + (productNumber++)), configuration).getResult();
 
 		long timeDiff = System.currentTimeMillis() - timeStart;
 		System.out.println("TOTAL TIME EXTERNALIZATION: " + timeDiff);
@@ -553,9 +553,9 @@ public class MMVitruvGroundTruthGeneratorTest {
 				Path groundTruthVariantSourceLocation = groundTruthVariantLocation.resolve("src");
 
 				try {
-					VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), groundTruthVariantLocation.getParent().resolve(groundTruthVariantLocation.getFileName().toString() + "-empty-ext-vsum"));
+					VirtualProductModel vmp = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), groundTruthVariantLocation.getParent().resolve(groundTruthVariantLocation.getFileName().toString() + "-empty-ext-vsum"));
 					Files.move(vaveResourceLocation, groundTruthVariantLocation.getParent().resolve(groundTruthVariantLocation.getFileName().toString() + "-empty-ext"));
-					VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), groundTruthVariantLocation.getParent().resolve(groundTruthVariantLocation.getFileName().toString() + "-empty-ext-vsum-2"));
+					VirtualProductModel vmp2 = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), groundTruthVariantLocation.getParent().resolve(groundTruthVariantLocation.getFileName().toString() + "-empty-ext-vsum-2"));
 					Collection<Resource> resources = this.parse(variantSourceLocation);
 					this.internalize(vmp, vmp2, resources);
 					Files.move(vaveResourceLocation, groundTruthVariantLocation);

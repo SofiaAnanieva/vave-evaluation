@@ -37,7 +37,7 @@ import tools.vitruv.testutils.TestProjectManager;
  */
 @ExtendWith({ TestProjectManager.class, TestLogging.class, RegisterMetamodelsInStandalone.class })
 //@Disabled
-public class GeneratorTest {
+public class ArgoUMLVariantsGeneratorTest {
 
 	@Test
 	public void addImportsToJavaFiles() throws IOException {

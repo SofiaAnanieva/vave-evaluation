@@ -12,7 +12,7 @@ import org.emftext.language.java.JavaClasspath;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualProductModelInitializer;
 
-public class VirtualProductModelArgoUMLInitializer implements VirtualProductModelInitializer {
+public class ArgoUMLVirtualProductModelInitializer implements VirtualProductModelInitializer {
 
 	@Override
 	public void initialize(VirtualProductModel vpm) {

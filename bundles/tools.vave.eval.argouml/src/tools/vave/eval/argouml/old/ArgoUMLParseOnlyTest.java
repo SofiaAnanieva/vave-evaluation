@@ -1,4 +1,4 @@
-package tools.vave.eval.argouml;
+package tools.vave.eval.argouml.old;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -79,13 +79,12 @@ import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
-import vavemodel.Configuration;
-import vavemodel.Expression;
-import vavemodel.Feature;
-import vavemodel.FeatureOption;
-import vavemodel.FeatureRevision;
-import vavemodel.SystemRevision;
-import vavemodel.VavemodelFactory;
+import tools.vitruv.variability.vave.model.expression.Expression;
+import tools.vitruv.variability.vave.model.vave.Configuration;
+import tools.vitruv.variability.vave.model.vave.Feature;
+import tools.vitruv.variability.vave.model.vave.FeatureOption;
+import tools.vitruv.variability.vave.model.vave.FeatureRevision;
+import tools.vitruv.variability.vave.model.vave.SystemRevision;
 
 /**
  * Test that runs the entire ArgoUML evaluation as batch.

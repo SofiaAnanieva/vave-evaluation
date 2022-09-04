@@ -78,20 +78,20 @@ import tools.vitruv.testutils.TestLogging;
 import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
-import tools.vitruv.variability.vave.impl.FeatureModel;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
-import vavemodel.Configuration;
-import vavemodel.Conjunction;
-import vavemodel.CrossTreeConstraint;
-import vavemodel.Expression;
-import vavemodel.Feature;
-import vavemodel.FeatureOption;
-import vavemodel.FeatureRevision;
-import vavemodel.GroupType;
-import vavemodel.SystemRevision;
-import vavemodel.TreeConstraint;
-import vavemodel.Variable;
-import vavemodel.VavemodelFactory;
+import tools.vitruv.variability.vave.model.expression.Conjunction;
+import tools.vitruv.variability.vave.model.expression.Expression;
+import tools.vitruv.variability.vave.model.expression.Variable;
+import tools.vitruv.variability.vave.model.featuremodel.FeatureModel;
+import tools.vitruv.variability.vave.model.vave.Configuration;
+import tools.vitruv.variability.vave.model.vave.CrossTreeConstraint;
+import tools.vitruv.variability.vave.model.vave.Feature;
+import tools.vitruv.variability.vave.model.vave.FeatureOption;
+import tools.vitruv.variability.vave.model.vave.FeatureRevision;
+import tools.vitruv.variability.vave.model.vave.GroupType;
+import tools.vitruv.variability.vave.model.vave.SystemRevision;
+import tools.vitruv.variability.vave.model.vave.TreeConstraint;
+import tools.vitruv.variability.vave.model.vave.VaveFactory;
 
 /**
  * Test that runs the entire ArgoUML evaluation as batch.
@@ -128,7 +128,7 @@ public class ArgoUMLEvalTest {
 		for (int i = 0; i < 100; i++)
 			irp.addUserInteractions(new UserInteractionBase[] { ftui, ftui });
 
-		this.vave = new VirtualVaVeModelImpl(domains, changePropagationSpecifications, irp, projectFolder, new VirtualProductModelArgoUMLInitializer());
+		this.vave = new VirtualVaVeModelImpl(domains, changePropagationSpecifications, irp, projectFolder, new ArgoUMLVirtualProductModelInitializer());
 
 		// set up jamopp
 		JavaClasspath.getInitializers().clear();
@@ -334,7 +334,7 @@ public class ArgoUMLEvalTest {
 
 		// externalize product
 		System.out.println("EXTERNALIZING PRODUCT");
-		final VirtualProductModel vmp = vave.externalizeProduct(projectFolder.resolve("vsum" + (productNumber++)), configuration);
+		final VirtualProductModel vmp = vave.externalizeProduct(projectFolder.resolve("vsum" + (productNumber++)), configuration).getResult();
 
 		long timeDiff = System.currentTimeMillis() - timeStart;
 		System.out.println("TOTAL TIME EXTERNALIZATION: " + timeDiff);
@@ -1324,10 +1324,10 @@ public class ArgoUMLEvalTest {
 				long timeStart = System.currentTimeMillis();
 
 				System.out.println("START REV 2 PROD 0");
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				configuration.getOption().add(Fcore.getFeaturerevision().get(core_rev));
-				configuration.getOption().add(Flogging.getFeaturerevision().get(logg_rev));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(sysrev));
+				Configuration configuration = VaveFactory.eINSTANCE.createConfiguration();
+				configuration.getOptions().add(Fcore.getFeatureRevisions().get(core_rev));
+				configuration.getOptions().add(Flogging.getFeatureRevisions().get(logg_rev));
+				configuration.getOptions().add(vave.getSystem().getSystemRevisions().get(sysrev));
 				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R2-V-LOGG-ext-vsum\\src\\"));
 				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R2-V-LOGG-ext"));
 

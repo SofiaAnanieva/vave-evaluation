@@ -46,6 +46,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.emftext.language.java.JavaClasspath;
 import org.emftext.language.java.JavaClasspath.Initializer;
 import org.emftext.language.java.JavaPackage;
+import org.emftext.language.java.containers.CompilationUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,6 +60,7 @@ import tools.vitruv.applications.umljava.JavaToUmlChangePropagationSpecification
 import tools.vitruv.domains.java.JavaDomainProvider;
 import tools.vitruv.domains.uml.UmlDomainProvider;
 import tools.vitruv.framework.change.description.TransactionalChange;
+import tools.vitruv.framework.change.description.VitruviusChange;
 import tools.vitruv.framework.change.description.impl.TransactionalChangeImpl;
 import tools.vitruv.framework.change.echange.EChange;
 import tools.vitruv.framework.change.echange.feature.reference.InsertEReference;
@@ -76,36 +78,32 @@ import tools.vitruv.testutils.TestLogging;
 import tools.vitruv.testutils.TestProjectManager;
 import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
-import tools.vitruv.variability.vave.impl.FeatureModel;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
-import vavemodel.Configuration;
-import vavemodel.CrossTreeConstraint;
-import vavemodel.Expression;
-import vavemodel.Feature;
-import vavemodel.FeatureOption;
-import vavemodel.GroupType;
-import vavemodel.TreeConstraint;
-import vavemodel.Variable;
-import vavemodel.VavemodelFactory;
+import tools.vitruv.variability.vave.model.featuremodel.FeatureModel;
+import tools.vitruv.variability.vave.model.vave.Configuration;
+import tools.vitruv.variability.vave.model.vave.CrossTreeConstraint;
+import tools.vitruv.variability.vave.model.vave.Feature;
+import tools.vitruv.variability.vave.model.vave.FeatureOption;
+import tools.vitruv.variability.vave.model.vave.GroupType;
+import tools.vitruv.variability.vave.model.vave.TreeConstraint;
 
 /**
  * Test that runs the entire ArgoUML evaluation as batch.
  */
 @ExtendWith({ TestProjectManager.class, TestLogging.class, RegisterMetamodelsInStandalone.class })
 //@Disabled
-public class ArgoUMLEvalTest2 {
+public class ArgoUMLVitruvGroundTruthGeneratorTest {
 
 	protected VirtualVaVeModel vave = null;
 
-	protected int productNumber = 0;
-	protected int sysrev = -1;
-
-	protected final Path projectFolder = Paths.get("C:\\FZI\\vave-project-folder");
-	protected final Path vaveResourceLocation = Paths.get("C:\\FZI\\vave-resource-location\\temp");
+	protected final Path projectFolder = Paths.get("C:\\ArgoUML\\vave-project-folder");
+	protected final Path vaveResourceLocation = Paths.get("C:\\ArgoUML\\vave-resource-location\\temp");
 	protected final Path vaveProjectMarker = vaveResourceLocation.resolve("test_project.marker_vitruv");
 
 	@BeforeEach
 	public void setUp() throws Exception {
+		System.out.println("SET UP VAVE AND JAMOPP");
+
 		// create vave instance
 		Set<VitruvDomain> domains = new HashSet<>();
 		domains.add(new JavaDomainProvider().getDomain());
@@ -141,11 +139,11 @@ public class ArgoUMLEvalTest2 {
 			}
 		});
 		EPackage.Registry.INSTANCE.put("http://www.emftext.org/java", JavaPackage.eINSTANCE);
-
-		this.productNumber = 0;
 	}
 
 	protected Collection<Resource> parse(Path location) throws Exception {
+		long timeStart = System.currentTimeMillis();
+
 		ResourceSet resourceSet = ResourceSetUtil.withGlobalFactories(new ResourceSetImpl());
 		resourceSet.getLoadOptions().put("DISABLE_LAYOUT_INFORMATION_RECORDING", Boolean.TRUE);
 		resourceSet.getLoadOptions().put("DISABLE_LOCATION_MAP", Boolean.TRUE);
@@ -163,7 +161,7 @@ public class ArgoUMLEvalTest2 {
 		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jmi.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
 		// Path[] libraryFolders = new Path[] { location };
-		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\") };
+		Path[] libraryFolders = new Path[] { Paths.get("C:\\ArgoUML\\workarounds\\argouml-workaround\\src\\") };
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
 				if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {
@@ -178,8 +176,8 @@ public class ArgoUMLEvalTest2 {
 
 		// collect files to parse
 		List<Path> javaFiles = new ArrayList<>();
-		// Path[] sourceFolders = new Path[] { location.resolve("argouml-core-model\\src"), location.resolve("argouml-core-model-euml\\src"), location.resolve("argouml-core-model-mdr\\src") }; //, location.resolve("argouml-app\\src"), location.resolve("argouml-core-diagrams-sequence2\\src") };
-		Path[] sourceFolders = new Path[] { location };
+		Path[] sourceFolders = new Path[] { location.resolve("argouml-core-model\\src"), location.resolve("argouml-core-model-euml\\src"), location.resolve("argouml-core-model-mdr\\src"), location.resolve("argouml-app\\src") }; // , location.resolve("argouml-core-diagrams-sequence2\\src") };
+		// Path[] sourceFolders = new Path[] { location };
 		for (Path sourceFolder : sourceFolders) {
 			Files.walk(sourceFolder).forEach(f -> {
 				if (Files.isDirectory(f) && !f.equals(sourceFolder) && !f.getFileName().toString().startsWith(".") && !f.getFileName().toString().equals("META-INF") && !f.getFileName().toString().equals("test_project.marker_vitruv") && !f.getFileName().toString().equals("umloutput") && !f.getFileName().toString().contains("-") && !f.getFileName().toString().startsWith("build-eclipse")
@@ -208,7 +206,7 @@ public class ArgoUMLEvalTest2 {
 							sb.append(".");
 					}
 					resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/" + sb.toString()), URI.createFileURI(f.toString()));
-					System.out.println("PATHMAP: " + URI.createURI("pathmap:/javaclass/" + sb.toString()));
+//					System.out.println("PATHMAP: " + URI.createURI("pathmap:/javaclass/" + sb.toString()));
 				}
 			});
 		}
@@ -231,8 +229,6 @@ public class ArgoUMLEvalTest2 {
 		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$PathSelection.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
 		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.reveng.SettingsTypes$PathListSelection.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/reveng/SettingsTypes.java").toString()));
 
-		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/main.ProjectBrowser$Position.java"), URI.createFileURI(location.resolve("main/ProjectBrowser.java").toString()));
-
 		// parse files
 		System.out.println("PARSING JAVA FILES");
 		List<Object[]> runtimemap = new ArrayList<>();
@@ -253,7 +249,8 @@ public class ArgoUMLEvalTest2 {
 		System.out.println("NUM RESOURCES IN RS: " + resourceSet.getResources().size());
 
 		for (Resource resource : resources) {
-			if (resource.getURI().toString().contains("argouml") && resource.getURI().toString().contains("pathmap"))
+			// if (resource.getURI().toString().contains("argouml") && resource.getURI().toString().contains("pathmap"))
+			if (resource.getURI().toString().contains("pathmap"))
 				System.out.println("DDD: " + resource.getURI());
 		}
 
@@ -268,22 +265,25 @@ public class ArgoUMLEvalTest2 {
 
 		// convert pathmap uris to filesystem uris
 		for (Resource resource : resources) {
-			if (resource.getURI().toString().contains("pathmap:/javaclass/org.argouml"))
-				if (resourceSet.getURIConverter().getURIMap().get(resource.getURI()) != null)
-					resource.setURI(resourceSet.getURIConverter().getURIMap().get(resource.getURI()));
-				else if (resource.getURI().toString().contains("$")) {
-					String uriString = resource.getURI().toString().replace("$", ".");
-					URI tempUri = resourceSet.getURIConverter().getURIMap().get(URI.createURI(uriString));
-					if (tempUri != null)
-						resource.setURI(tempUri);
-					// TODO: add mapping to uri converter?
+			// if (resource.getURI().toString().contains("pathmap:/javaclass/org.argouml")) {
+			if (resource.getURI().toString().contains("pathmap:/javaclass/")) {
+				if (resource.getURI().toString().contains("$")) {
+					// change name of compilation unit
+					if (resource.getContents().size() == 1 && resource.getContents().get(0) instanceof CompilationUnit) {
+						CompilationUnit cu = (CompilationUnit) resource.getContents().get(0);
+						if (cu.getName().contains("$")) {
+							cu.setName(cu.getName().substring(0, cu.getName().lastIndexOf("$")) + ".java");
+						}
+					} else {
+						System.out.println("FFF: " + resource.getURI());
+					}
 				}
-//				else {
-//					String filePathString = resource.getURI().toString().substring(0, resource.getURI().toString().lastIndexOf("$")) + ".java";
-//					resourceSet.getURIConverter().getURIMap().put(resource.getURI(), URI.createURI(filePathString));
-//					resource.setURI(resourceSet.getURIConverter().getURIMap().get(resource.getURI()));
-//					System.out.println("XXX: " + resource.getURI());
-//				}
+				if (resourceSet.getURIConverter().getURIMap().get(resource.getURI()) != null) {
+					resource.setURI(resourceSet.getURIConverter().getURIMap().get(resource.getURI()));
+				} else {
+					System.out.println("GGG: " + resource.getURI());
+				}
+			}
 		}
 
 		// change uri of resources
@@ -309,6 +309,9 @@ public class ArgoUMLEvalTest2 {
 			System.out.println("T: " + entry[0] + " - " + entry[1]);
 		}
 
+		long timeDiff = System.currentTimeMillis() - timeStart;
+		System.out.println("TOTAL TIME PARSING: " + timeDiff);
+
 		return resources;
 	}
 
@@ -316,16 +319,23 @@ public class ArgoUMLEvalTest2 {
 		if (!Files.exists(vaveProjectMarker))
 			Files.createDirectories(vaveProjectMarker);
 
+		long timeStart = System.currentTimeMillis();
+
 		// externalize product
 		System.out.println("EXTERNALIZING PRODUCT");
-		final VirtualProductModel vmp = vave.externalizeProduct(projectFolder.resolve("vsum" + (productNumber++)), configuration);
+		final VirtualProductModel vmp = vave.externalizeProduct(projectFolder.resolve("vsum"), configuration).getResult();
+
+		long timeDiff = System.currentTimeMillis() - timeStart;
+		System.out.println("TOTAL TIME EXTERNALIZATION: " + timeDiff);
 
 		return vmp;
 	}
 
-	protected void internalize(VirtualProductModel vmp, VirtualProductModel vmp2, Collection<Resource> resources, Expression<FeatureOption> e) throws Exception {
+	protected void internalize(VirtualProductModel vmp, VirtualProductModel vmp2, Collection<Resource> resources) throws Exception {
 		if (!Files.exists(vaveProjectMarker))
 			Files.createDirectories(vaveProjectMarker);
+
+		long timeStart = System.currentTimeMillis();
 
 		final MatchEngineFactoryImpl matchEngineFactory = new HierarchicalMatchEngineFactory(new EqualityHelper(EqualityHelper.createDefaultCache(CacheBuilder.newBuilder())), new SimilarityChecker());
 		matchEngineFactory.setRanking(20);
@@ -372,7 +382,7 @@ public class ArgoUMLEvalTest2 {
 		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jmi.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
 		// Path[] libraryFolders = new Path[] { location };
-		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\") };
+		Path[] libraryFolders = new Path[] { Paths.get("C:\\ArgoUML\\workarounds\\argouml-workaround\\src\\") };
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
 				if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {
@@ -441,13 +451,13 @@ public class ArgoUMLEvalTest2 {
 		for (EChange change : recordedChange.getEChanges()) {
 			if ((change instanceof ReplaceSingleValuedEReference) && ((ReplaceSingleValuedEReference) change).getNewValueID() != null && ((ReplaceSingleValuedEReference) change).getNewValueID().contains("pathmap") && ((ReplaceSingleValuedEReference) change).getNewValueID().contains(".java#/1")) {
 				// this is the workaround for the the problem vitruvius has with the ".length" field of arrays of all types outside of the actually parsed source code (e.g., java.lang.Object or java.lang.Byte).
-				System.out.println("IGNORE: " + change);
+				// System.out.println("IGNORE: " + change);
 			} else if ((change instanceof ReplaceSingleValuedEReference) && ((ReplaceSingleValuedEReference) change).getNewValueID() != null && ((ReplaceSingleValuedEReference) change).getAffectedEObject() != null && !((EObject) ((ReplaceSingleValuedEReference) change).getNewValue()).eResource().getURI().equals(((ReplaceSingleValuedEReference) change).getAffectedEObject().eResource().getURI())) {
 				toAppend2.add(change);
-				System.out.println("moved change to back: " + change);
+				// System.out.println("moved change to back: " + change);
 			} else if ((change instanceof InsertEReference) && ((InsertEReference) change).getNewValue() != null && ((InsertEReference) change).getAffectedEObject() != null && !((EObject) ((InsertEReference) change).getNewValue()).eResource().getURI().equals(((InsertEReference) change).getAffectedEObject().eResource().getURI())) {
 				toAppend.add(change);
-				System.out.println("moved change to back: " + change);
+				// System.out.println("moved change to back: " + change);
 			} else {
 				newEChanges.add(change);
 			}
@@ -460,16 +470,17 @@ public class ArgoUMLEvalTest2 {
 
 		System.out.println("NUM CHANGES: " + orderedChange.getEChanges().size());
 
+		// unresolve change
+		VitruviusChange unresolvedChange = orderedChange.unresolve();
+
 		// propagate changes into product
 		System.out.println("PROPAGATING CHANGES INTO PRODUCT");
-		vmp.propagateChange(orderedChange.unresolve());
-		//vmp2.propagateChange(recordedChange);
+		// vmp2.propagateChange(recordedChange);
+		// vmp2.propagateChange(orderedChange);
+		vmp2.propagateChange(unresolvedChange);
 
-		// internalize changes in product into system
-		System.out.println("INTERNALIZING CHANGES IN PRODUCT INTO SYSTEM");
-		vave.internalizeChanges(vmp2, e);
-
-		sysrev++;
+		long timeDiff = System.currentTimeMillis() - timeStart;
+		System.out.println("TOTAL TIME INTERNALIZATION: " + timeDiff);
 	}
 
 	protected static void resolveAllProxies(ResourceSet rs) {
@@ -506,33 +517,23 @@ public class ArgoUMLEvalTest2 {
 			return true;
 		}
 
-		System.out.println("Resolving cross-references of " + eobjects.size() + " EObjects.");
+//		System.out.println("Resolving cross-references of " + eobjects.size() + " EObjects.");
 		int resolved = 0;
 		int notResolved = 0;
 		int eobjectCnt = 0;
 		for (EObject next : eobjects) {
 			eobjectCnt++;
-			if (eobjectCnt % 1000 == 0) {
-				System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
-			}
+//			if (eobjectCnt % 1000 == 0) {
+//				System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
+//			}
 
 			InternalEObject nextElement = (InternalEObject) next;
-//			boolean relevant2 = false;
-//			if (nextElement.eResource().getURI().toString().contains("argouml") && nextElement.eResource().getURI().toString().contains("pathmap"))
-//				relevant2 = true;
 			nextElement = (InternalEObject) EcoreUtil.resolve(nextElement, rs);
-//			if (relevant2 && nextElement.eIsProxy())
-//				System.out.println("AAA: " + nextElement.eResource().getURI());
 			for (EObject crElement : nextElement.eCrossReferences()) {
 //				if (crElement.eIsProxy()) {
 				crElement = EcoreUtil.resolve(crElement, rs);
 				// nextElement.eResolveProxy((InternalEObject) crElement);
-//				boolean relevant = false;
-//				if (crElement.eResource().getURI().toString().contains("argouml") && crElement.eResource().getURI().toString().contains("pathmap"))
-//					relevant = true;
 				if (crElement.eIsProxy()) {
-//					if (relevant)
-//						System.out.println("BBB: " + crElement.eResource().getURI());
 					failure = true;
 					notResolved++;
 					System.out.println("Can not find referenced element in classpath: " + ((InternalEObject) crElement).eProxyURI());
@@ -543,131 +544,125 @@ public class ArgoUMLEvalTest2 {
 			}
 		}
 
-		System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
+//		System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
 
 		// call this method again, because the resolving might have triggered loading of additional resources that may also contain references that need to be resolved.
 		return !failure && resolveAllProxiesRecursive(rs, resourcesProcessed);
 	}
 
-	/**
-	 * This test starts from a product with no (or only core) features and adds individual features.
-	 * 
-	 * @throws Exception
-	 */
 	@Test
 	// @Disabled
-	public void EvalTestAdditive() throws Exception {
-		// initialize vave system
-		// done in @Before
-
-		// internalize domain
+	public void GenreateVitruvGroundTruthVariants() throws Exception {
 		FeatureModel fm = new FeatureModel(null, null, new HashSet<FeatureOption>(), new HashSet<TreeConstraint>(), new HashSet<CrossTreeConstraint>());
 
 		Feature Fcore = VavemodelFactory.eINSTANCE.createFeature();
-		Fcore.setName("Core"); // this represents the ArgoUML root feature as well as the mandatory features Diagrams and Class of the original ArgoUML feature model
+		Fcore.setName("Core");
 		Feature Fcognitive = VavemodelFactory.eINSTANCE.createFeature();
 		Fcognitive.setName("Cognitive");
 		Feature Flogging = VavemodelFactory.eINSTANCE.createFeature();
 		Flogging.setName("Logging");
 		Feature Factivity = VavemodelFactory.eINSTANCE.createFeature();
 		Factivity.setName("Activity");
-		Feature Fsequence = VavemodelFactory.eINSTANCE.createFeature();
-		Fsequence.setName("Sequence");
-		Feature Fstate = VavemodelFactory.eINSTANCE.createFeature();
-		Fstate.setName("State");
-		Feature Fcollaboration = VavemodelFactory.eINSTANCE.createFeature();
-		Fcollaboration.setName("Collaboration");
-		Feature Fusecase = VavemodelFactory.eINSTANCE.createFeature();
-		Fusecase.setName("UseCase");
-		Feature Fdeployment = VavemodelFactory.eINSTANCE.createFeature();
-		Fdeployment.setName("Deployment");
+
+		this.optionalFeatures.add(Fcognitive);
+		this.optionalFeatures.add(Flogging);
+		this.optionalFeatures.add(Factivity);
 
 		fm.getFeatureOptions().add(Fcore);
 		fm.getFeatureOptions().add(Fcognitive);
 		fm.getFeatureOptions().add(Flogging);
 		fm.getFeatureOptions().add(Factivity);
-		fm.getFeatureOptions().add(Fsequence);
-		fm.getFeatureOptions().add(Fstate);
-		fm.getFeatureOptions().add(Fcollaboration);
-		fm.getFeatureOptions().add(Fusecase);
-		fm.getFeatureOptions().add(Fdeployment);
 
 		fm.setRootFeature(Fcore);
 		TreeConstraint treeCstr = VavemodelFactory.eINSTANCE.createTreeConstraint();
 		treeCstr.setType(GroupType.ORNONE);
-		treeCstr.getFeature().add(Flogging);
 		treeCstr.getFeature().add(Fcognitive);
+		treeCstr.getFeature().add(Flogging);
+		treeCstr.getFeature().add(Factivity);
 		Fcore.getTreeconstraint().add(treeCstr);
 		fm.getTreeConstraints().add(treeCstr);
 
-		int core_rev = -1;
-		int logg_rev = -1;
-		int cogn_rev = -1;
-
 		this.vave.internalizeDomain(fm);
-		sysrev++;
 
-		// Path variantsLocation = Paths.get("C:\\FZI\\git\\argouml-spl-revisions-variants");
-		Path variantsLocation = Paths.get("C:\\FZI\\git\\test-variants-2");
+		Path variantsLocation = Paths.get("C:\\ArgoUML\\argouml-spl-revisions-variants");
 
-		{ // # REVISION 0 (ArgoUML-SPL)
-			Path revision0VariantsLocation = variantsLocation.resolve("R0_variants");
-			System.out.println("START REV 0");
+		for (int rev = 6; rev <= 9; rev++) {
+			Path revisionVariantsLocation = variantsLocation.resolve("R" + rev + "_variants");
+			System.out.println("START REV " + rev);
 
-			{ // CORE
-				long timeStart = System.currentTimeMillis();
-
-				System.out.println("START REV 0 PROD 0");
-				// externalize empty product with expression TRUE
-				VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), vaveResourceLocation.getParent().resolve("R0-V-empty-ext-vsum\\src\\"));
-				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R0-V-empty-ext"));
-
-				VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), vaveResourceLocation.getParent().resolve("R0-V-empty-extt-vsum\\src\\"));
-
-				// internalize ArgoUML R0 Product P0 (Core) generated by generator with expression Core
-				Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V\\src\\"));
-				// Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V-COGN-LOGG-ACTI-COLL-DEPL-SEQU-STAT-USEC\\src\\"));
-				// Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("argouml-workaround\\src\\"));
-				Variable<FeatureOption> expression = VavemodelFactory.eINSTANCE.createVariable();
-				expression.setOption(Fcore);
-				this.internalize(vmp, vmp2, resources, expression);
-				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R0-V-int"));
-
-				core_rev++;
-
-				long timeDiff = System.currentTimeMillis() - timeStart;
-				System.out.println("TOTAL TIME: " + timeDiff);
-			}
-
-			{ // COGNITIVE
-				long timeStart = System.currentTimeMillis();
-
-				System.out.println("START REV 0 PROD 1");
-				// externalize Core.1
-				Configuration configuration = VavemodelFactory.eINSTANCE.createConfiguration();
-				// add features and feature revisions to configuration
-				configuration.getOption().add(Fcore.getFeaturerevision().get(core_rev));
-				configuration.getOption().add(vave.getSystem().getSystemrevision().get(sysrev));
-				VirtualProductModel vmp = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R0-V-ext1-vsum\\src\\"));
-				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R0-V-ext1"));
-
-				VirtualProductModel vmp2 = this.externalize(configuration, vaveResourceLocation.getParent().resolve("R0-V-extt1-vsum\\src\\"));
-				
-				// internalize ArgoUML R0 Product P1 (Core, Cognitive) generated by generator with expression Cognitive
-				Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V-COGN\\src"));
-				// Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("V-COGN-LOGG-ACTI-COLL-DEPL-SEQU-STAT-USEC\\src\\"));
-				// Collection<Resource> resources = this.parse(revision0VariantsLocation.resolve("argouml-workaround\\src\\"));
-				Variable<FeatureOption> variable = VavemodelFactory.eINSTANCE.createVariable();
-				variable.setOption(Fcognitive);
-				this.internalize(vmp, vmp2, resources, variable);
-				Files.move(vaveResourceLocation, vaveResourceLocation.getParent().resolve("R0-V-COGN-int"));
-
-				cogn_rev++;
-
-				long timeDiff = System.currentTimeMillis() - timeStart;
-				System.out.println("TOTAL TIME: " + timeDiff);
-			}
+			Path evalVariantsLocation = vaveResourceLocation.getParent().resolve("R" + rev + "-eval-variants");
+			Files.createDirectory(evalVariantsLocation);
+			this.createEvalVariants(revisionVariantsLocation, evalVariantsLocation);
 		}
+	}
+
+	private List<Feature> optionalFeatures = new ArrayList<>();
+
+	private void createEvalVariants(Path sourceLocation, Path targetLocation) throws Exception {
+//		List<Feature> optionalFeatures = this.vave.getSystem().getFeature().stream().filter(f -> !f.getName().equals("Core")).collect(Collectors.toList());
+
+		// only core
+//		{
+//			VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-vsum"));
+//			Files.move(vaveResourceLocation, targetLocation.resolve("V-empty"));
+//			VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-vsum"));
+//			Collection<Resource> resources = this.parse(sourceLocation.resolve("V\\src"));
+//			this.internalize(vmp, vmp2, resources);
+//			Files.move(vaveResourceLocation, targetLocation.resolve("V"));
+//		}
+
+		// single feature 1 COGN
+		{
+			Feature optionalFeature = optionalFeatures.get(0);
+			VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
+			VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "\\src"));
+			this.internalize(vmp, vmp2, resources);
+			Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
+		}
+
+//		// single feature 2 LOG
+		{
+			Feature optionalFeature = optionalFeatures.get(1);
+			VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
+			VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "\\src"));
+			this.internalize(vmp, vmp2, resources);
+			Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
+		}
+
+		// single feature 3 ACTI
+		{
+			Feature optionalFeature = optionalFeatures.get(2);
+			VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
+			VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "\\src"));
+			this.internalize(vmp, vmp2, resources);
+			Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
+		}
+
+//		// pair-wise feature interactions
+//		for (int i = 0; i < optionalFeatures.size(); i++) {
+//			for (int j = i + 1; j < optionalFeatures.size(); j++) {
+//				VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase() + "-vsum"));
+//				Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase()));
+//				VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase() + "-vsum"));
+//				Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase() + "\\src"));
+//				this.internalize(vmp, vmp2, resources);
+//				Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase()));
+//			}
+//		}
+
+		// all features
+		VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-")) + "-vsum"));
+		Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-"))));
+		VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-")) + "-vsum"));
+		Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-")) + "\\src"));
+		this.internalize(vmp, vmp2, resources);
+		Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-"))));
 	}
 
 }
