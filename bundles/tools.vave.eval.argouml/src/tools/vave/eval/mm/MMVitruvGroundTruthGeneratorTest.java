@@ -201,7 +201,6 @@ public class MMVitruvGroundTruthGeneratorTest {
 		// collect files to parse
 		List<Path> javaFiles = new ArrayList<>();
 		// parse constants first
-//		javaFiles.add(location.resolve(Paths.get("lancs\\mobilemedia\\core\\util\\Constants.java")));
 		Path[] sourceFolders = new Path[] { location };
 		for (Path sourceFolder : sourceFolders) {
 			Files.walk(sourceFolder).forEach(f -> {
@@ -224,7 +223,6 @@ public class MMVitruvGroundTruthGeneratorTest {
 							sb.append(".");
 					}
 					resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/" + sb.toString()), URI.createFileURI(f.toString()));
-//					System.out.println("PATHMAP: " + URI.createURI("pathmap:/javaclass/" + sb.toString()));
 				}
 			});
 		}
@@ -439,13 +437,10 @@ public class MMVitruvGroundTruthGeneratorTest {
 		for (EChange change : recordedChange.getEChanges()) {
 			if ((change instanceof ReplaceSingleValuedEReference) && ((ReplaceSingleValuedEReference) change).getNewValueID() != null && ((ReplaceSingleValuedEReference) change).getNewValueID().contains("pathmap") && ((ReplaceSingleValuedEReference) change).getNewValueID().contains(".java#/1")) {
 				// this is the workaround for the the problem vitruvius has with the ".length" field of arrays of all types outside of the actually parsed source code (e.g., java.lang.Object or java.lang.Byte).
-				// System.out.println("IGNORE: " + change);
 			} else if ((change instanceof ReplaceSingleValuedEReference) && ((ReplaceSingleValuedEReference) change).getNewValueID() != null && ((ReplaceSingleValuedEReference) change).getAffectedEObject() != null && !((EObject) ((ReplaceSingleValuedEReference) change).getNewValue()).eResource().getURI().equals(((ReplaceSingleValuedEReference) change).getAffectedEObject().eResource().getURI())) {
 				toAppend2.add(change);
-				// System.out.println("moved change to back: " + change);
 			} else if ((change instanceof InsertEReference) && ((InsertEReference) change).getNewValue() != null && ((InsertEReference) change).getAffectedEObject() != null && !((EObject) ((InsertEReference) change).getNewValue()).eResource().getURI().equals(((InsertEReference) change).getAffectedEObject().eResource().getURI())) {
 				toAppend.add(change);
-				// System.out.println("moved change to back: " + change);
 			} else {
 				newEChanges.add(change);
 			}
@@ -511,16 +506,11 @@ public class MMVitruvGroundTruthGeneratorTest {
 		int eobjectCnt = 0;
 		for (EObject next : eobjects) {
 			eobjectCnt++;
-//			if (eobjectCnt % 1000 == 0) {
-//				System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
-//			}
 
 			InternalEObject nextElement = (InternalEObject) next;
 			nextElement = (InternalEObject) EcoreUtil.resolve(nextElement, rs);
 			for (EObject crElement : nextElement.eCrossReferences()) {
-//				if (crElement.eIsProxy()) {
 				crElement = EcoreUtil.resolve(crElement, rs);
-				// nextElement.eResolveProxy((InternalEObject) crElement);
 				if (crElement.eIsProxy()) {
 					failure = true;
 					notResolved++;
@@ -528,11 +518,8 @@ public class MMVitruvGroundTruthGeneratorTest {
 				} else {
 					resolved++;
 				}
-//				}
 			}
 		}
-
-//		System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
 
 		// call this method again, because the resolving might have triggered loading of additional resources that may also contain references that need to be resolved.
 		return !failure && resolveAllProxiesRecursive(rs, resourcesProcessed);

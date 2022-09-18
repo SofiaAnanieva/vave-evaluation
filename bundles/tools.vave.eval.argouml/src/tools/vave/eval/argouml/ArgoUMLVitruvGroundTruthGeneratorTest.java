@@ -80,12 +80,13 @@ import tools.vitruv.variability.vave.VirtualProductModel;
 import tools.vitruv.variability.vave.VirtualVaVeModel;
 import tools.vitruv.variability.vave.impl.VirtualVaVeModelImpl;
 import tools.vitruv.variability.vave.model.featuremodel.FeatureModel;
+import tools.vitruv.variability.vave.model.featuremodel.FeaturemodelFactory;
+import tools.vitruv.variability.vave.model.featuremodel.ViewFeature;
+import tools.vitruv.variability.vave.model.featuremodel.ViewTreeConstraint;
 import tools.vitruv.variability.vave.model.vave.Configuration;
-import tools.vitruv.variability.vave.model.vave.CrossTreeConstraint;
 import tools.vitruv.variability.vave.model.vave.Feature;
-import tools.vitruv.variability.vave.model.vave.FeatureOption;
 import tools.vitruv.variability.vave.model.vave.GroupType;
-import tools.vitruv.variability.vave.model.vave.TreeConstraint;
+import tools.vitruv.variability.vave.model.vave.VaveFactory;
 
 /**
  * Test that runs the entire ArgoUML evaluation as batch.
@@ -160,7 +161,6 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\rt.jar").toAbsolutePath().toString()));
 		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jmi.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
-		// Path[] libraryFolders = new Path[] { location };
 		Path[] libraryFolders = new Path[] { Paths.get("C:\\ArgoUML\\workarounds\\argouml-workaround\\src\\") };
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
@@ -182,17 +182,6 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 			Files.walk(sourceFolder).forEach(f -> {
 				if (Files.isDirectory(f) && !f.equals(sourceFolder) && !f.getFileName().toString().startsWith(".") && !f.getFileName().toString().equals("META-INF") && !f.getFileName().toString().equals("test_project.marker_vitruv") && !f.getFileName().toString().equals("umloutput") && !f.getFileName().toString().contains("-") && !f.getFileName().toString().startsWith("build-eclipse")
 						&& !f.getFileName().toString().startsWith("bin") && !f.getFileName().toString().startsWith("template")) {
-//					Path packageInfoPath = f.resolve(Paths.get("package-info.java"));
-//					try {
-//						if (!Files.exists(packageInfoPath)) {
-//							Files.createFile(packageInfoPath);
-//							Files.writeString(packageInfoPath, "package " + sourceFolder.relativize(f).toString().replace(java.io.File.separator, ".") + ";");
-//						}
-//						javaFiles.add(packageInfoPath);
-//						System.out.println("ADDED PACKAGE INFO FILE: " + packageInfoPath);
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}
 				} else if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".java") && !f.getFileName().toString().equals("package-info.java")) {
 					javaFiles.add(f);
 					System.out.println("ADDED JAVA FILE: " + f);
@@ -210,7 +199,7 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 				}
 			});
 		}
-		// manual workaround for now
+		// manual workaround
 		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.model.mdr.UndoCoreHelperDecorator$StringSetter.java"), URI.createFileURI(location.resolve("argouml-core-model-mdr/src/org/argouml/model/mdr/UndoCoreHelperDecorator.java").toString()));
 		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.diagram.DiagramFactory$DiagramType.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/diagram/DiagramFactory.java").toString()));
 		resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/org.argouml.uml.diagram.sequence.ui.FigLifeLine$FigLifeLineHandler.java"), URI.createFileURI(location.resolve("argouml-app/src/org/argouml/uml/diagram/sequence/ui/FigLifeLine.java").toString()));
@@ -405,21 +394,6 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 
 			Resource referenceResource;
 
-//			Path relativeResourcePath = productLocation.relativize(Paths.get(resource.getURI().toFileString()));
-//			URI vaveURI = URI.createFileURI(vaveResourceLocation.resolve(relativeResourcePath).toString());
-//			System.out.println("URI: " + vaveURI);
-//			if (vmp.getModelInstance(vaveURI) != null) {
-//				referenceResource = vmp.getModelInstance(vaveURI).getResource();
-//			} else {
-//				referenceResource = dummyResourceSet.createResource(vaveURI);
-//			}
-
-//			if (vmp.getModelInstance(resource.getURI()) != null) {
-//				referenceResource = vmp.getModelInstance(resource.getURI()).getResource();
-//			} else {
-//				referenceResource = referenceResourceSet.createResource(resource.getURI());
-//			}
-
 			referenceResource = referenceResourceSet.getResource(resource.getURI(), false);
 			if (referenceResource == null) {
 				System.out.println("NEW RESOURCE DETECTED: " + resource.getURI());
@@ -517,22 +491,16 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 			return true;
 		}
 
-//		System.out.println("Resolving cross-references of " + eobjects.size() + " EObjects.");
 		int resolved = 0;
 		int notResolved = 0;
 		int eobjectCnt = 0;
 		for (EObject next : eobjects) {
 			eobjectCnt++;
-//			if (eobjectCnt % 1000 == 0) {
-//				System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
-//			}
 
 			InternalEObject nextElement = (InternalEObject) next;
 			nextElement = (InternalEObject) EcoreUtil.resolve(nextElement, rs);
 			for (EObject crElement : nextElement.eCrossReferences()) {
-//				if (crElement.eIsProxy()) {
 				crElement = EcoreUtil.resolve(crElement, rs);
-				// nextElement.eResolveProxy((InternalEObject) crElement);
 				if (crElement.eIsProxy()) {
 					failure = true;
 					notResolved++;
@@ -540,53 +508,57 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 				} else {
 					resolved++;
 				}
-//				}
 			}
 		}
-
-//		System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
 
 		// call this method again, because the resolving might have triggered loading of additional resources that may also contain references that need to be resolved.
 		return !failure && resolveAllProxiesRecursive(rs, resourcesProcessed);
 	}
 
 	@Test
-	// @Disabled
 	public void GenreateVitruvGroundTruthVariants() throws Exception {
-		FeatureModel fm = new FeatureModel(null, null, new HashSet<FeatureOption>(), new HashSet<TreeConstraint>(), new HashSet<CrossTreeConstraint>());
+		FeatureModel fm = FeaturemodelFactory.eINSTANCE.createFeatureModel();
 
-		Feature Fcore = VavemodelFactory.eINSTANCE.createFeature();
-		Fcore.setName("Core");
-		Feature Fcognitive = VavemodelFactory.eINSTANCE.createFeature();
-		Fcognitive.setName("Cognitive");
-		Feature Flogging = VavemodelFactory.eINSTANCE.createFeature();
-		Flogging.setName("Logging");
-		Feature Factivity = VavemodelFactory.eINSTANCE.createFeature();
-		Factivity.setName("Activity");
+		ViewFeature viewFcore = FeaturemodelFactory.eINSTANCE.createViewFeature();
+		viewFcore.setName("Core"); // this represents the ArgoUML root feature as well as the mandatory features Diagrams and Class of the original ArgoUML feature model
+		ViewFeature viewFcognitive = FeaturemodelFactory.eINSTANCE.createViewFeature();
+		viewFcognitive.setName("Cognitive");
+		ViewFeature viewFlogging = FeaturemodelFactory.eINSTANCE.createViewFeature();
+		viewFlogging.setName("Logging");
+		ViewFeature viewFactivity = FeaturemodelFactory.eINSTANCE.createViewFeature();
+		viewFactivity.setName("Activity");
+
+		fm.getRootFeatures().add(viewFcore);
+
+		ViewTreeConstraint treeCstr1 = FeaturemodelFactory.eINSTANCE.createViewTreeConstraint();
+		treeCstr1.setType(GroupType.OPTIONAL);
+		treeCstr1.getChildFeatures().add(viewFlogging);
+		viewFcore.getChildTreeConstraints().add(treeCstr1);
+
+		ViewTreeConstraint treeCstr2 = FeaturemodelFactory.eINSTANCE.createViewTreeConstraint();
+		treeCstr2.setType(GroupType.OPTIONAL);
+		treeCstr2.getChildFeatures().add(viewFcognitive);
+		viewFcore.getChildTreeConstraints().add(treeCstr2);
+
+		ViewTreeConstraint treeCstr3 = FeaturemodelFactory.eINSTANCE.createViewTreeConstraint();
+		treeCstr3.setType(GroupType.OPTIONAL);
+		treeCstr3.getChildFeatures().add(viewFactivity);
+		viewFcore.getChildTreeConstraints().add(treeCstr3);
+
+		this.vave.internalizeDomain(fm);
+
+		Feature Fcore = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Core")).findAny().get();
+		Feature Fcognitive = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Cognitive")).findAny().get();
+		Feature Flogging = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Logging")).findAny().get();
+		Feature Factivity = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Activity")).findAny().get();
 
 		this.optionalFeatures.add(Fcognitive);
 		this.optionalFeatures.add(Flogging);
 		this.optionalFeatures.add(Factivity);
 
-		fm.getFeatureOptions().add(Fcore);
-		fm.getFeatureOptions().add(Fcognitive);
-		fm.getFeatureOptions().add(Flogging);
-		fm.getFeatureOptions().add(Factivity);
-
-		fm.setRootFeature(Fcore);
-		TreeConstraint treeCstr = VavemodelFactory.eINSTANCE.createTreeConstraint();
-		treeCstr.setType(GroupType.ORNONE);
-		treeCstr.getFeature().add(Fcognitive);
-		treeCstr.getFeature().add(Flogging);
-		treeCstr.getFeature().add(Factivity);
-		Fcore.getTreeconstraint().add(treeCstr);
-		fm.getTreeConstraints().add(treeCstr);
-
-		this.vave.internalizeDomain(fm);
-
 		Path variantsLocation = Paths.get("C:\\ArgoUML\\argouml-spl-revisions-variants");
 
-		for (int rev = 6; rev <= 9; rev++) {
+		for (int rev = 1; rev <= 9; rev++) {
 			Path revisionVariantsLocation = variantsLocation.resolve("R" + rev + "_variants");
 			System.out.println("START REV " + rev);
 
@@ -603,9 +575,9 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 
 		// only core
 //		{
-//			VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-vsum"));
+//			VirtualProductModel vmp = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-vsum"));
 //			Files.move(vaveResourceLocation, targetLocation.resolve("V-empty"));
-//			VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-vsum"));
+//			VirtualProductModel vmp2 = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-vsum"));
 //			Collection<Resource> resources = this.parse(sourceLocation.resolve("V\\src"));
 //			this.internalize(vmp, vmp2, resources);
 //			Files.move(vaveResourceLocation, targetLocation.resolve("V"));
@@ -614,9 +586,9 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 		// single feature 1 COGN
 		{
 			Feature optionalFeature = optionalFeatures.get(0);
-			VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			VirtualProductModel vmp = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
 			Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
-			VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			VirtualProductModel vmp2 = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
 			Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "\\src"));
 			this.internalize(vmp, vmp2, resources);
 			Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
@@ -625,9 +597,9 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 //		// single feature 2 LOG
 		{
 			Feature optionalFeature = optionalFeatures.get(1);
-			VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			VirtualProductModel vmp = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
 			Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
-			VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			VirtualProductModel vmp2 = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
 			Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "\\src"));
 			this.internalize(vmp, vmp2, resources);
 			Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
@@ -636,9 +608,9 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 		// single feature 3 ACTI
 		{
 			Feature optionalFeature = optionalFeatures.get(2);
-			VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			VirtualProductModel vmp = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
 			Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
-			VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
+			VirtualProductModel vmp2 = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "-vsum"));
 			Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase() + "\\src"));
 			this.internalize(vmp, vmp2, resources);
 			Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeature.getName().substring(0, 4).toUpperCase()));
@@ -647,9 +619,9 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 //		// pair-wise feature interactions
 //		for (int i = 0; i < optionalFeatures.size(); i++) {
 //			for (int j = i + 1; j < optionalFeatures.size(); j++) {
-//				VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase() + "-vsum"));
+//				VirtualProductModel vmp = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase() + "-vsum"));
 //				Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase()));
-//				VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase() + "-vsum"));
+//				VirtualProductModel vmp2 = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase() + "-vsum"));
 //				Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase() + "\\src"));
 //				this.internalize(vmp, vmp2, resources);
 //				Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeatures.get(i).getName().substring(0, 4).toUpperCase() + "-" + optionalFeatures.get(j).getName().substring(0, 4).toUpperCase()));
@@ -657,9 +629,9 @@ public class ArgoUMLVitruvGroundTruthGeneratorTest {
 //		}
 
 		// all features
-		VirtualProductModel vmp = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-")) + "-vsum"));
+		VirtualProductModel vmp = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-empty-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-")) + "-vsum"));
 		Files.move(vaveResourceLocation, targetLocation.resolve("V-empty-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-"))));
-		VirtualProductModel vmp2 = this.externalize(VavemodelFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-")) + "-vsum"));
+		VirtualProductModel vmp2 = this.externalize(VaveFactory.eINSTANCE.createConfiguration(), targetLocation.resolve("V-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-")) + "-vsum"));
 		Collection<Resource> resources = this.parse(sourceLocation.resolve("V-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-")) + "\\src"));
 		this.internalize(vmp, vmp2, resources);
 		Files.move(vaveResourceLocation, targetLocation.resolve("V-" + optionalFeatures.stream().map(f -> f.getName().substring(0, 4).toUpperCase()).collect(Collectors.joining("-"))));

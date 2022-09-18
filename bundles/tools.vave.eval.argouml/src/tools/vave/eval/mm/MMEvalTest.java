@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,10 +60,8 @@ import com.google.common.cache.CacheBuilder;
 import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceSetUtil;
 import tools.vave.java.HierarchicalMatchEngineFactory;
 import tools.vave.java.SimilarityChecker;
-import tools.vitruv.applications.pcmjava.pojotransformations.java2pcm.Java2PcmChangePropagationSpecification;
 import tools.vitruv.applications.umljava.JavaToUmlChangePropagationSpecification;
 import tools.vitruv.domains.java.JavaDomainProvider;
-import tools.vitruv.domains.pcm.PcmDomainProvider;
 import tools.vitruv.domains.uml.UmlDomainProvider;
 import tools.vitruv.framework.change.description.TransactionalChange;
 import tools.vitruv.framework.change.description.VitruviusChange;
@@ -126,14 +125,10 @@ public class MMEvalTest {
 		Set<VitruvDomain> domains = new HashSet<>();
 		domains.add(new JavaDomainProvider().getDomain());
 		domains.add(new UmlDomainProvider().getDomain());
-		domains.add(new PcmDomainProvider().getDomain());
 
 		Set<ChangePropagationSpecification> changePropagationSpecifications = new HashSet<>();
 		JavaToUmlChangePropagationSpecification javaumlcps = new JavaToUmlChangePropagationSpecification();
 		changePropagationSpecifications.add(javaumlcps);
-
-		Java2PcmChangePropagationSpecification javapcmcps = new Java2PcmChangePropagationSpecification();
-		changePropagationSpecifications.add(javapcmcps);
 
 		PredefinedInteractionResultProvider irp = UserInteractionFactory.instance.createPredefinedInteractionResultProvider(null);
 		FreeTextUserInteraction ftui = new InteractionFactoryImpl().createFreeTextUserInteraction();
@@ -233,7 +228,6 @@ public class MMEvalTest {
 		// collect files to parse
 		List<Path> javaFiles = new ArrayList<>();
 		// parse constants first
-//		javaFiles.add(location.resolve(Paths.get("lancs\\mobilemedia\\core\\util\\Constants.java")));
 		Path[] sourceFolders = new Path[] { location };
 		for (Path sourceFolder : sourceFolders) {
 			Files.walk(sourceFolder).forEach(f -> {
@@ -256,7 +250,6 @@ public class MMEvalTest {
 							sb.append(".");
 					}
 					resourceSet.getURIConverter().getURIMap().put(URI.createURI("pathmap:/javaclass/" + sb.toString()), URI.createFileURI(f.toString()));
-//					System.out.println("PATHMAP: " + URI.createURI("pathmap:/javaclass/" + sb.toString()));
 				}
 			});
 		}
@@ -425,21 +418,6 @@ public class MMEvalTest {
 
 			Resource referenceResource;
 
-//			Path relativeResourcePath = productLocation.relativize(Paths.get(resource.getURI().toFileString()));
-//			URI vaveURI = URI.createFileURI(vaveResourceLocation.resolve(relativeResourcePath).toString());
-//			System.out.println("URI: " + vaveURI);
-//			if (vmp.getModelInstance(vaveURI) != null) {
-//				referenceResource = vmp.getModelInstance(vaveURI).getResource();
-//			} else {
-//				referenceResource = dummyResourceSet.createResource(vaveURI);
-//			}
-
-//			if (vmp.getModelInstance(resource.getURI()) != null) {
-//				referenceResource = vmp.getModelInstance(resource.getURI()).getResource();
-//			} else {
-//				referenceResource = referenceResourceSet.createResource(resource.getURI());
-//			}
-
 			referenceResource = referenceResourceSet.getResource(resource.getURI(), false);
 			if (referenceResource == null) {
 				System.out.println("NEW RESOURCE DETECTED: " + resource.getURI());
@@ -564,22 +542,16 @@ public class MMEvalTest {
 			return true;
 		}
 
-//		System.out.println("Resolving cross-references of " + eobjects.size() + " EObjects.");
 		int resolved = 0;
 		int notResolved = 0;
 		int eobjectCnt = 0;
 		for (EObject next : eobjects) {
 			eobjectCnt++;
-//			if (eobjectCnt % 1000 == 0) {
-//				System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
-//			}
 
 			InternalEObject nextElement = (InternalEObject) next;
 			nextElement = (InternalEObject) EcoreUtil.resolve(nextElement, rs);
 			for (EObject crElement : nextElement.eCrossReferences()) {
-//				if (crElement.eIsProxy()) {
 				crElement = EcoreUtil.resolve(crElement, rs);
-				// nextElement.eResolveProxy((InternalEObject) crElement);
 				if (crElement.eIsProxy()) {
 					failure = true;
 					notResolved++;
@@ -587,14 +559,17 @@ public class MMEvalTest {
 				} else {
 					resolved++;
 				}
-//				}
 			}
 		}
 
-//		System.out.println(eobjectCnt + "/" + eobjects.size() + " done: Resolved " + resolved + " crossrefs, " + notResolved + " crossrefs could not be resolved.");
-
 		// call this method again, because the resolving might have triggered loading of additional resources that may also contain references that need to be resolved.
 		return !failure && resolveAllProxiesRecursive(rs, resourcesProcessed);
+	}
+
+	private void printHints(String revision, Collection<Feature[]> hints) throws IOException {
+		String type2string = hints.stream().map(fi -> Arrays.asList(fi).stream().map(f -> f.getName()).collect(Collectors.joining("/"))).collect(Collectors.joining(System.lineSeparator()));
+		System.out.println(type2string);
+		Files.writeString(vaveResourceLocation.getParent().resolve("R" + revision + "-eval-type2.txt"), "TYPE 2 EVAL " + revision + ":" + System.lineSeparator() + "NEW INTERACTIONS:" + System.lineSeparator() + type2string, StandardOpenOption.CREATE);
 	}
 
 	/**
@@ -603,7 +578,6 @@ public class MMEvalTest {
 	 * @throws Exception
 	 */
 	@Test
-	// @Disabled
 	public void EvalTestAdditive() throws Exception {
 		// initialize vave system
 		// done in @Before
@@ -627,7 +601,8 @@ public class MMEvalTest {
 			viewFcore.setName("Core");
 //			fm.getRootFeatures().add(viewFcore);
 			fm.getFeatureOptions().add(viewFcore);
-			this.vave.internalizeDomain(fm);
+			Collection<Feature[]> hints10 = ((HintComputation.Result) this.vave.internalizeDomain(fm).getConsistencyResult(HintComputation.class)).getNewHints();
+			this.printHints("1-beginning", hints10);
 			Fcore = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Core")).findAny().get();
 
 			FeatureModel repairedFM = null;
@@ -662,9 +637,12 @@ public class MMEvalTest {
 			// type 5
 			// TODO: check if the automatically added constraints match the actual constraints in the ground truth feature model of MM revision
 			System.out.println("TYPE 5 EVAL 1:");
-			this.outputEvalFeatureModel(repairedFM);
-			if (repairedFM != null)
-				this.vave.internalizeDomain(repairedFM);
+			String type5eval1string = this.outputEvalFeatureModel(repairedFM);
+			Files.writeString(vaveResourceLocation.getParent().resolve("R1-eval-type5.txt"), "TYPE 5 EVAL 1:" + System.lineSeparator() + type5eval1string, StandardOpenOption.CREATE);
+			if (repairedFM != null) {
+				Collection<Feature[]> hints1 = ((HintComputation.Result) this.vave.internalizeDomain(repairedFM).getConsistencyResult(HintComputation.class)).getNewHints();
+				this.printHints("1-end", hints1);
+			}
 		}
 
 		{ // # REVISION 2
@@ -679,7 +657,8 @@ public class MMEvalTest {
 			ViewFeature viewFsortcount = FeaturemodelFactory.eINSTANCE.createViewFeature();
 			viewFsortcount.setName("Sort");
 			fm.getFeatureOptions().add(viewFsortcount);
-			this.vave.internalizeDomain(fm);
+			Collection<Feature[]> hints2before = ((HintComputation.Result) this.vave.internalizeDomain(fm).getConsistencyResult(HintComputation.class)).getNewHints();
+			this.printHints("2-beginning", hints2before);
 			Flabel = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Label")).findAny().get();
 			Fsortcount = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Sort")).findAny().get();
 
@@ -738,9 +717,12 @@ public class MMEvalTest {
 			// type 5
 			// TODO: check if the automatically added constraints match the actual constraints in the ground truth feature model of MM revision
 			System.out.println("TYPE 5 EVAL 2:");
-			this.outputEvalFeatureModel(repairedFM);
-			if (repairedFM != null)
-				this.vave.internalizeDomain(repairedFM);
+			String type5eval2string = this.outputEvalFeatureModel(repairedFM);
+			Files.writeString(vaveResourceLocation.getParent().resolve("R2-eval-type5.txt"), "TYPE 5 EVAL 2:" + System.lineSeparator() + type5eval2string, StandardOpenOption.CREATE);
+			if (repairedFM != null) {
+				Collection<Feature[]> hints2 = ((HintComputation.Result) this.vave.internalizeDomain(repairedFM).getConsistencyResult(HintComputation.class)).getNewHints();
+				this.printHints("2-end", hints2);
+			}
 		}
 
 		{ // # REVISION 3
@@ -752,7 +734,8 @@ public class MMEvalTest {
 			ViewFeature viewFfav = FeaturemodelFactory.eINSTANCE.createViewFeature();
 			viewFfav.setName("Fav");
 			fm.getFeatureOptions().add(viewFfav);
-			this.vave.internalizeDomain(fm);
+			Collection<Feature[]> hints3before = ((HintComputation.Result) this.vave.internalizeDomain(fm).getConsistencyResult(HintComputation.class)).getNewHints();
+			this.printHints("3-beginning", hints3before);
 			Ffav = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Fav")).findAny().get();
 
 			FeatureModel repairedFM = null;
@@ -811,9 +794,12 @@ public class MMEvalTest {
 			// type 5
 			// TODO: check if the automatically added constraints match the actual constraints in the ground truth feature model of MM revision
 			System.out.println("TYPE 5 EVAL 3:");
-			this.outputEvalFeatureModel(repairedFM);
-			if (repairedFM != null)
-				this.vave.internalizeDomain(repairedFM);
+			String type5eval3string = this.outputEvalFeatureModel(repairedFM);
+			Files.writeString(vaveResourceLocation.getParent().resolve("R3-eval-type5.txt"), "TYPE 5 EVAL 3:" + System.lineSeparator() + type5eval3string, StandardOpenOption.CREATE);
+			if (repairedFM != null) {
+				Collection<Feature[]> hints3 = ((HintComputation.Result) this.vave.internalizeDomain(repairedFM).getConsistencyResult(HintComputation.class)).getNewHints();
+				this.printHints("3-end", hints3);
+			}
 		}
 
 		{ // # REVISION 4
@@ -824,7 +810,8 @@ public class MMEvalTest {
 			ViewFeature viewFcopy = FeaturemodelFactory.eINSTANCE.createViewFeature();
 			viewFcopy.setName("Copy");
 			fm.getFeatureOptions().add(viewFcopy);
-			this.vave.internalizeDomain(fm);
+			Collection<Feature[]> hints4before = ((HintComputation.Result) this.vave.internalizeDomain(fm).getConsistencyResult(HintComputation.class)).getNewHints();
+			this.printHints("4-beginning", hints4before);
 			Fcopy = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Copy")).findAny().get();
 
 			FeatureModel repairedFM = null;
@@ -961,9 +948,12 @@ public class MMEvalTest {
 			// type 5
 			// TODO: check if the automatically added constraints match the actual constraints in the ground truth feature model of MM revision
 			System.out.println("TYPE 5 EVAL 4:");
-			this.outputEvalFeatureModel(repairedFM);
-			if (repairedFM != null)
-				this.vave.internalizeDomain(repairedFM);
+			String type5eval4string = this.outputEvalFeatureModel(repairedFM);
+			Files.writeString(vaveResourceLocation.getParent().resolve("R4-eval-type5.txt"), "TYPE 5 EVAL 4:" + System.lineSeparator() + type5eval4string, StandardOpenOption.CREATE);
+			if (repairedFM != null) {
+				Collection<Feature[]> hints4 = ((HintComputation.Result) this.vave.internalizeDomain(repairedFM).getConsistencyResult(HintComputation.class)).getNewHints();
+				this.printHints("4-end", hints4);
+			}
 		}
 
 		{ // # REVISION 5
@@ -974,7 +964,8 @@ public class MMEvalTest {
 			ViewFeature viewFsms = FeaturemodelFactory.eINSTANCE.createViewFeature();
 			viewFsms.setName("SMS");
 			fm.getFeatureOptions().add(viewFsms);
-			this.vave.internalizeDomain(fm);
+			Collection<Feature[]> hints5before = ((HintComputation.Result) this.vave.internalizeDomain(fm).getConsistencyResult(HintComputation.class)).getNewHints();
+			this.printHints("5-beginning", hints5before);
 			Fsms = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("SMS")).findAny().get();
 
 			FeatureModel repairedFM = null;
@@ -1058,28 +1049,35 @@ public class MMEvalTest {
 			// type 5
 			// TODO: check if the automatically added constraints match the actual constraints in the ground truth feature model of MM revision
 			System.out.println("TYPE 5 EVAL 5:");
-			this.outputEvalFeatureModel(repairedFM);
-			if (repairedFM != null)
-				this.vave.internalizeDomain(repairedFM);
+			String type5eval5string = this.outputEvalFeatureModel(repairedFM);
+			Files.writeString(vaveResourceLocation.getParent().resolve("R5-eval-type5.txt"), "TYPE 5 EVAL 5:" + System.lineSeparator() + type5eval5string, StandardOpenOption.CREATE);
+			if (repairedFM != null) {
+				Collection<Feature[]> hints5 = ((HintComputation.Result) this.vave.internalizeDomain(repairedFM).getConsistencyResult(HintComputation.class)).getNewHints();
+				this.printHints("5-end", hints5);
+			}
 		}
 
 	}
 
-	private void outputEvalFeatureModel(FeatureModel repairedFM) {
+	private String outputEvalFeatureModel(FeatureModel repairedFM) {
+		StringBuffer sb = new StringBuffer();
 		if (repairedFM == null)
-			System.out.println("FEATURE MODEL: NULL");
+			sb.append("FEATURE MODEL: NULL" + System.lineSeparator());
 		else {
-			System.out.println("FEATURE MODEL:");
-			System.out.println("ROOT FEATURE: " + repairedFM.getRootFeatures().get(0));
-			System.out.println("TREE CONSTRAINTS:");
+			sb.append("FEATURE MODEL:" + System.lineSeparator());
+			sb.append("ROOT FEATURE: " + repairedFM.getRootFeatures().get(0) + System.lineSeparator());
+			sb.append("TREE CONSTRAINTS:" + System.lineSeparator());
 			for (ViewTreeConstraint tc : FeatureModelUtil.collectTreeConstraints(repairedFM)) {
-				System.out.println(tc.getParentFeature().getOriginalFeature().getName() + " -> " + tc.getType() + " -> {" + tc.getChildFeatures().stream().map(f -> f.getName()).collect(Collectors.joining(", ")) + "}");
+				sb.append(tc.getParentFeature().getOriginalFeature().getName() + " -> " + tc.getType() + " -> {" + tc.getChildFeatures().stream().map(f -> f.getName()).collect(Collectors.joining(", ")) + "}" + System.lineSeparator());
 			}
-			System.out.println("CROSS-TREE CONSTRAINTS:");
+			sb.append("CROSS-TREE CONSTRAINTS:" + System.lineSeparator());
 			for (ViewCrossTreeConstraint ctc : repairedFM.getCrossTreeConstraints()) {
-				System.out.println(ExpressionUtil.toString(ctc.getExpression()));
+				sb.append(ExpressionUtil.toString(ctc.getExpression()) + System.lineSeparator());
 			}
 		}
+		String s = sb.toString();
+		System.out.println(s);
+		return s;
 	}
 
 	private void createEvalVariants(Path targetLocation) throws Exception {

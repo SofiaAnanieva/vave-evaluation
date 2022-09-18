@@ -49,19 +49,13 @@ import tools.vave.uml.UMLMatchEngineFactory;
 /**
  * Computes the metrics used for the evaluation with Mobile Media. This involves a comparison of all generated variants with / without consistency preservation with the ground-truth variants by using EMFCompare.
  */
-//@Disabled
 public class MMMetricsComputationTest {
-
-	@Test
-	public void compareTwoModelsTest() throws IOException {
-		int numDiffs = this.compareModels(Paths.get("C:\\Users\\ananieva\\Desktop\\model-full-v2.uml"), Paths.get("C:\\Users\\ananieva\\Desktop\\umloutput-full-v2.uml"));
-		System.out.println("NUM DIFFS: " + numDiffs);
-	}
 
 	@Test
 	public void computeMetricsForEval() throws IOException {
 		Path groundTruthLocation = Paths.get("C:\\FZI\\git\\mm-spl-revisions-variants\\ground-truth");
-		Path vaveLocation = Paths.get("C:\\FZI\\git\\mm-spl-revisions-variants\\vave");
+//		Path vaveLocation = Paths.get("C:\\FZI\\git\\mm-spl-revisions-variants\\vave");
+		Path vaveLocation = Paths.get("C:\\FZI\\vave-resource-location");
 
 		{ // compute differences between ground truth uml models at revision R and R-1 per product variant.
 			FileWriter fw = new FileWriter("C:\\FZI\\git\\mm-spl-revisions-variants\\ground-truth\\res1.csv");
@@ -151,22 +145,11 @@ public class MMMetricsComputationTest {
 				return new FeatureFilter() {
 					@Override
 					protected boolean isIgnoredReference(Match match, EReference reference) {
-////						boolean isIgnored = !(reference == UMLPackage.Literals.NAMESPACE__OWNED_MEMBER); // contained packages, operations, attributes, etc.
-////								|| reference == UMLPackage.Literals.CLASSIFIER__GENERALIZATION || reference == UMLPackage.Literals.BEHAVIORED_CLASSIFIER__INTERFACE_REALIZATION || reference == UMLPackage.Literals.TYPED_ELEMENT__TYPE);;
-//						boolean isIgnored = true;
-////						if (!isIgnored)
-////							System.out.println("REF: " + match);
-//						return isIgnored;
 						return super.isIgnoredReference(match, reference);
 					}
 
 					@Override
 					public boolean isIgnoredAttribute(EAttribute attribute) {
-//						//return true;
-//						boolean isIgnored = !(attribute == UMLPackage.Literals.NAMED_ELEMENT__VISIBILITY || attribute == UMLPackage.Literals.NAMED_ELEMENT__NAME);
-////						if (!isIgnored)
-////							System.out.println("ATT: " + attribute);
-//						return isIgnored;
 						return super.isIgnoredAttribute(attribute);
 					}
 
@@ -236,7 +219,6 @@ public class MMMetricsComputationTest {
 				counter[2]++;
 				System.out.println("RIGHT: " + match.getRight() + " / " + match.eContainer());
 			}
-			// this.countMatch(match.getSubmatches(), counter);
 		}
 	}
 

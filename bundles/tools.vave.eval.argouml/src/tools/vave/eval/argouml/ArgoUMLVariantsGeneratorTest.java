@@ -349,67 +349,6 @@ public class ArgoUMLVariantsGeneratorTest {
 					visitor.processJavaFile(javaFile);
 				}
 
-//			// HERE START THE FIXES
-//
-//			org.eclipse.uml2.uml.Package argoPackage = (org.eclipse.uml2.uml.Package) ((org.eclipse.uml2.uml.Package) ((Model) resource.getContents().stream().filter(v -> (v instanceof Model)).findFirst().get()).getPackagedElements().stream().filter(v -> (v instanceof org.eclipse.uml2.uml.Package) && ((org.eclipse.uml2.uml.Package) v).getName().equals("org")).findFirst().get())
-//					.getPackagedElements().stream().filter(v -> (v instanceof org.eclipse.uml2.uml.Package) && ((org.eclipse.uml2.uml.Package) v).getName().equals("argouml")).findFirst().get();
-
-//			// delete all classes that are empty and have an interface with same name in same package
-//			{
-//				Collection<EObject> toDelete = new ArrayList<>();
-//				TreeIterator<EObject> it = resource.getAllContents();
-//				while (it.hasNext()) {
-//					EObject o = it.next();
-//					if (o instanceof Class && o.eContents().isEmpty() && ((Class) o).eContainer().eContents().stream().filter(v -> v instanceof Interface && ((Interface) v).getName().equals(((Class) o).getName())).findAny().isPresent()) { // && ((Class)o).getAppliedStereotype("External") == null) {
-//						toDelete.add(o);
-//						System.out.println("CLEANUP2!!!");
-//					}
-//				}
-//				for (EObject o : toDelete)
-//					org.eclipse.emf.ecore.util.EcoreUtil.remove(o);
-//			}
-//			// delete all empty classes in argouml package (they are either external and placed in the wrong package or are actually interfaces and created a second time as empty classes.
-//			{
-//				Collection<EObject> toDelete = new ArrayList<>();
-//				TreeIterator<EObject> it = argoPackage.eAllContents();
-//				while (it.hasNext()) {
-//					EObject o = it.next();
-//					if (o instanceof Class && o.eContents().isEmpty()) { // && ((Class)o).getAppliedStereotype("External") == null) {
-//						toDelete.add(o);
-//						System.out.println("CLEANUP4!!!");
-//					}
-//				}
-//				for (EObject o : toDelete)
-//					org.eclipse.emf.ecore.util.EcoreUtil.remove(o);
-//			}
-//			// delete all parameters without type where another parameter with the same name exists
-//			{
-//				Collection<EObject> toDelete = new ArrayList<>();
-//				TreeIterator<EObject> it = resource.getAllContents();
-//				while (it.hasNext()) {
-//					EObject o = it.next();
-//					if (o instanceof Parameter && ((Parameter) o).getType() == null && ((Parameter) o).getOperation().getOwnedParameters().stream().filter(v -> v != o && ((Parameter) v).getName().equals(((Parameter) o).getName())).findAny().isPresent()) { // && ((Class)o).getAppliedStereotype("External") == null) {
-//						toDelete.add(o);
-//						System.out.println("CLEANUP3!!!");
-//					}
-//				}
-//				for (EObject o : toDelete)
-//					org.eclipse.emf.ecore.util.EcoreUtil.remove(o);
-//			}
-//			// make all interface operations public and abstract
-//			{
-//				TreeIterator<EObject> it = resource.getAllContents(); // argoPackage.eAllContents();
-//				while (it.hasNext()) {
-//					EObject o = it.next();
-//					if (o instanceof Operation && o.eContainer() instanceof Interface) {
-//						((Operation) o).setIsAbstract(true);
-//						// ((Operation) o).setVisibility(VisibilityKind.PUBLIC_LITERAL);
-//						((Operation) o).setVisibility(null);
-//						System.out.println("CLEANUP1!!!");
-//					}
-//				}
-//			}
-
 				try {
 					resource.save(null);
 				} catch (Exception e) {
