@@ -113,8 +113,8 @@ public class MMEvalTest {
 
 	protected int productNumber = 0;
 
-	protected final Path projectFolder = Paths.get("C:\\FZI\\vave-project-folder");
-	protected final Path vaveResourceLocation = Paths.get("C:\\FZI\\vave-resource-location\\temp");
+	protected final Path projectFolder = Paths.get("output/mm-project-folder");
+	protected final Path vaveResourceLocation = Paths.get("output/mm-resource-location/temp");
 	protected final Path vaveProjectMarker = vaveResourceLocation.resolve("test_project.marker_vitruv");
 
 	@BeforeEach
@@ -582,7 +582,7 @@ public class MMEvalTest {
 		// initialize vave system
 		// done in @Before
 
-		Path variantsLocation = Paths.get("C:\\FZI\\git\\mm-spl-revisions-variants");
+		Path variantsLocation = Paths.get("input/mm-spl-revisions-variants");
 
 		Feature Fcore;
 		Feature Flabel;

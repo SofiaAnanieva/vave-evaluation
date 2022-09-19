@@ -108,8 +108,8 @@ public class ArgoUMLEvalTest {
 	protected int productNumber = 0;
 	protected int sysrev = -1;
 
-	protected final Path projectFolder = Paths.get("C:\\FZI\\vave-project-folder");
-	protected final Path vaveResourceLocation = Paths.get("C:\\FZI\\vave-resource-location\\temp");
+	protected final Path projectFolder = Paths.get("output/argouml-project-folder");
+	protected final Path vaveResourceLocation = Paths.get("output/argouml-resource-location/temp");
 	protected final Path vaveProjectMarker = vaveResourceLocation.resolve("test_project.marker_vitruv");
 
 	@BeforeEach
@@ -175,7 +175,7 @@ public class ArgoUMLEvalTest {
 		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\argouml\\jmi.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
 		// Path[] libraryFolders = new Path[] { location };
-		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\") };
+		Path[] libraryFolders = new Path[] { Paths.get("input/dependencies") };
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
 				if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {
@@ -384,7 +384,7 @@ public class ArgoUMLEvalTest {
 		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\argouml\\jmi.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
 		// Path[] libraryFolders = new Path[] { location };
-		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\") };
+		Path[] libraryFolders = new Path[] { Paths.get("input/dependencies") };
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
 				if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {
@@ -603,7 +603,7 @@ public class ArgoUMLEvalTest {
 		Feature Flogging = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Logging")).findAny().get();
 		Feature Factivity = this.vave.getSystem().getFeatures().stream().filter(f -> f.getName().equals("Activity")).findAny().get();
 
-		Path variantsLocation = Paths.get("C:\\FZI\\git\\argouml-spl-revisions-variants");
+		Path variantsLocation = Paths.get("input/argouml-spl-revisions-variants");
 
 		{ // # REVISION 0 (ArgoUML-SPL)
 			Path revision0VariantsLocation = variantsLocation.resolve("R0_variants");

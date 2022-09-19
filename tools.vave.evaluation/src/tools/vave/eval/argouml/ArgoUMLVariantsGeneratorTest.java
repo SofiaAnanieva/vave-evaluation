@@ -16,18 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.ResourceSet;
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.uml2.uml.Model;
-import org.eclipse.uml2.uml.UMLFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceSetUtil;
-import tools.vave.eval.argouml.generator.JavaPpGenerator;
-import tools.vave.eval.argouml.generator.UMLFromJavaGenerator;
 import tools.vitruv.testutils.RegisterMetamodelsInStandalone;
 import tools.vitruv.testutils.TestLogging;
 import tools.vitruv.testutils.TestProjectManager;
@@ -296,66 +287,6 @@ public class ArgoUMLVariantsGeneratorTest {
 	@Test
 	public void addVitruvUMLModelToAllArgoUMLVariants() {
 		// TODO
-	}
-
-	/**
-	 * This test uses the Papyrus Java Reverse functionality to add a UML model to every ArgoUML variant in a given folder.
-	 */
-	@Test
-	public void addPapyrusUMLModelToAllArgoUMLVariants() throws IOException {
-		Path targetLocation = Paths.get("C:\\FZI\\git\\argouml-spl-revisions-variants");
-
-		for (int rev = 7; rev <= 9; rev++) {
-			Path revisionLocation = targetLocation.resolve("R" + rev + "_variants");
-
-			Collection<Path> variantLocations = Files.list(revisionLocation).collect(Collectors.toList());
-
-			for (Path variantLocation : variantLocations) {
-				// create uml diagram of variant
-				List<String> fullyQualifiedNames = new ArrayList<>();
-				List<Path> javaFiles = new ArrayList<>();
-
-				Path[] sourceFolders = new Path[] { variantLocation.resolve("src\\argouml-core-model\\src"), variantLocation.resolve("src\\argouml-core-model-euml\\src"), variantLocation.resolve("src\\argouml-core-model-mdr\\src"), variantLocation.resolve("src\\argouml-app\\src"), variantLocation.resolve("src\\argouml-core-diagrams-sequence2\\src") };
-				for (Path sourceFolder : sourceFolders) {
-					Files.walk(sourceFolder).forEach(f -> {
-						if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".java") && !f.getFileName().toString().equals("package-info.java")) {
-							javaFiles.add(f);
-							System.out.println("ADDED JAVA FILE: " + f);
-							String fullyQualifiedName = sourceFolder.relativize(f).toString().replace(java.io.File.separator, ".");
-							fullyQualifiedName = fullyQualifiedName.substring(0, fullyQualifiedName.length() - 5);
-							fullyQualifiedNames.add(fullyQualifiedName);
-							System.out.println("ADDED FULLY QUALIFIED NAME: " + fullyQualifiedName);
-						}
-					});
-				}
-
-				ResourceSet resourceSet = ResourceSetUtil.withGlobalFactories(new ResourceSetImpl());
-				Resource resource = resourceSet.createResource(URI.createFileURI(variantLocation.resolve("model.uml").toString()));
-
-				Model modelRoot = UMLFactory.eINSTANCE.createModel();
-				modelRoot.setName("umloutput");
-				resource.getContents().add(modelRoot);
-
-				UMLFromJavaGenerator.Parameters parameters;
-				parameters = new UMLFromJavaGenerator.Parameters();
-				parameters.setSearchPaths(Arrays.asList(new String[] {}));
-				parameters.setUmlRootPackage(modelRoot);
-				parameters.setPackageName("");
-				parameters.setCreationPaths(Arrays.asList(new String[] { "java.*", "blubb.*", ".", "org.*", "blubb.*", ".", "javax.*", "blubb.*", ".", "tudresden.*", "blubb.*", "." }));
-				parameters.setQualifiedNamesInProjects(fullyQualifiedNames);
-
-				UMLFromJavaGenerator visitor = new UMLFromJavaGenerator(parameters);
-				for (Path javaFile : javaFiles) {
-					visitor.processJavaFile(javaFile);
-				}
-
-				try {
-					resource.save(null);
-				} catch (Exception e) {
-					System.out.println(e.getMessage());
-				}
-			}
-		}
 	}
 
 	/**

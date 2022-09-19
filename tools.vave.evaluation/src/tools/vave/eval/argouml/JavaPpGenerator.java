@@ -1,4 +1,4 @@
-package tools.vave.eval.argouml.generator;
+package tools.vave.eval.argouml;
 
 import java.io.File;
 import java.io.IOException;

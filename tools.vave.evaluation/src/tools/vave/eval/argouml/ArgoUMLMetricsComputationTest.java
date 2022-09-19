@@ -1,4 +1,4 @@
-package tools.vave.eval.mm;
+package tools.vave.eval.argouml;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -47,47 +47,38 @@ import edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceSetUt
 import tools.vave.uml.UMLMatchEngineFactory;
 
 /**
- * Computes the metrics used for the evaluation with Mobile Media. This involves a comparison of all generated variants with / without consistency preservation with the ground-truth variants by using EMFCompare.
+ * Computes the metrics used for the evaluation with ArgoUML. This involves a comparison of all generated variants with / without consistency preservation with the ground-truth variants by using EMFCompare.
  */
-public class MMMetricsComputationTest {
+public class ArgoUMLMetricsComputationTest {
 
 	@Test
 	public void computeMetricsForEval() throws IOException {
-		Path groundTruthLocation = Paths.get("C:\\FZI\\git\\mm-spl-revisions-variants\\ground-truth");
-//		Path vaveLocation = Paths.get("C:\\FZI\\git\\mm-spl-revisions-variants\\vave");
-		Path vaveLocation = Paths.get("C:\\FZI\\vave-resource-location");
+		Path groundTruthLocation = Paths.get("input/argouml-ground-truth");
+		Path vaveLocation = Paths.get("output/argouml-resource-location");
 
 		{ // compute differences between ground truth uml models at revision R and R-1 per product variant.
-			FileWriter fw = new FileWriter("C:\\FZI\\git\\mm-spl-revisions-variants\\ground-truth\\res1.csv");
+			FileWriter fw = new FileWriter("output/argouml-resource-location/res1.csv");
 
 			List<Map<String, Integer>> revisionMap = new ArrayList<>();
 
-			for (int rev = 1; rev <= 5; rev++) {
-				Path previousRevisionLocation = groundTruthLocation.resolve("R" + (rev - 1) + "_variants");
-				Path revisionLocation = groundTruthLocation.resolve("R" + rev + "_variants");
+			for (int rev = 1; rev <= 9; rev++) {
+				Path previousRevisionLocation = groundTruthLocation.resolve("R" + (rev - 1) + "-eval-variants");
+				Path revisionLocation = groundTruthLocation.resolve("R" + rev + "-eval-variants");
 
-				Collection<Path> variantLocations = Files.list(revisionLocation).collect(Collectors.toList());
+				Collection<Path> variantLocations = Files.list(revisionLocation).filter(f -> !f.getFileName().toString().endsWith("-vsum")).collect(Collectors.toList());
 
 				Map<String, Integer> differencesPerVariant = new HashMap<>();
 
 				for (Path variantLocation : variantLocations) {
-					String variantLocationFileNameString = variantLocation.getFileName().toString();
-					Path previousVariantLocation = previousRevisionLocation.resolve(variantLocationFileNameString).resolve("umloutput/umloutput.uml");
-					while (!Files.exists(previousVariantLocation) && variantLocationFileNameString.indexOf("-") != -1) {
-						variantLocationFileNameString = variantLocationFileNameString.substring(0, variantLocationFileNameString.lastIndexOf("-"));
-						previousVariantLocation = previousRevisionLocation.resolve(variantLocationFileNameString).resolve("umloutput/umloutput.uml");
-					}
-					if (Files.exists(previousVariantLocation)) {
-						int numDiffs = this.compareModels(variantLocation.resolve("umloutput/umloutput.uml"), previousVariantLocation);
+					int numDiffs = this.compareModelsOfArgoUMLVariants(variantLocation.resolve("umloutput/umloutput.uml"), previousRevisionLocation.resolve(variantLocation.getFileName()).resolve("umloutput/umloutput.uml"));
 
-						differencesPerVariant.put(variantLocation.getFileName().toString(), numDiffs);
-					}
+					differencesPerVariant.put(variantLocation.getFileName().toString(), numDiffs);
 				}
 
 				revisionMap.add(differencesPerVariant);
 			}
 			// write results to csv file (product id; system revision; differences).
-			for (int rev = 1; rev <= 5; rev++) {
+			for (int rev = 1; rev <= 9; rev++) {
 				for (Map.Entry<String, Integer> entry : revisionMap.get(rev - 1).entrySet()) {
 					fw.write(entry.getKey() + ";" + rev + ";" + entry.getValue() + "\n");
 				}
@@ -97,30 +88,32 @@ public class MMMetricsComputationTest {
 		}
 
 		{ // compute differences between ground truth uml models at revisions R and computed uml models at revision R per product variant.
-			FileWriter fw = new FileWriter("C:\\FZI\\git\\mm-spl-revisions-variants\\ground-truth\\res2.csv");
+			FileWriter fw = new FileWriter("output/argouml-resource-location/res2.csv");
 
 			List<Map<String, Integer>> revisionMap = new ArrayList<>();
 
-			for (int rev = 1; rev <= 5; rev++) {
-				Path groundTruthRevisionLocation = groundTruthLocation.resolve("R" + rev + "_variants");
+			for (int rev = 0; rev <= 9; rev++) {
+				Path groundTruthRevisionLocation = groundTruthLocation.resolve("R" + rev + "-eval-variants");
 				Path revisionLocation = vaveLocation.resolve("R" + rev + "-eval-variants");
 
-				Collection<Path> groundTruthVariantLocations = Files.list(groundTruthRevisionLocation).collect(Collectors.toList());
+				Collection<Path> groundTruthVariantLocations = Files.list(groundTruthRevisionLocation).filter(f -> !f.getFileName().toString().endsWith("-vsum")).collect(Collectors.toList());
 
 				Map<String, Integer> differencesPerVariant = new HashMap<>();
 
 				for (Path groundTruthVariantLocation : groundTruthVariantLocations) {
 					Path vaveVariantLocation = revisionLocation.resolve(groundTruthRevisionLocation.relativize(groundTruthVariantLocation));
-					int numDiffs = this.compareModels(groundTruthVariantLocation.resolve("umloutput/umloutput.uml"), vaveVariantLocation.resolve("umloutput/umloutput.uml"));
+					if (Files.exists(vaveVariantLocation)) {
+						int numDiffs = this.compareModelsOfArgoUMLVariants(groundTruthVariantLocation.resolve("umloutput/umloutput.uml"), vaveVariantLocation.resolve("umloutput/umloutput.uml"));
 
-					differencesPerVariant.put(groundTruthVariantLocation.getFileName().toString(), numDiffs);
+						differencesPerVariant.put(groundTruthVariantLocation.getFileName().toString(), numDiffs);
+					}
 				}
 
 				revisionMap.add(differencesPerVariant);
 			}
 			// write results to csv file (product id; system revision; differences).
-			for (int rev = 1; rev <= 5; rev++) {
-				for (Map.Entry<String, Integer> entry : revisionMap.get(rev - 1).entrySet()) {
+			for (int rev = 0; rev <= 9; rev++) {
+				for (Map.Entry<String, Integer> entry : revisionMap.get(rev).entrySet()) {
 					fw.write(entry.getKey() + ";" + rev + ";" + entry.getValue() + "\n");
 				}
 			}
@@ -131,7 +124,7 @@ public class MMMetricsComputationTest {
 		// aggregate over revisions and total? or use excel or R for that?
 	}
 
-	private int compareModels(Path model1Location, Path model2Location) {
+	public int compareModelsOfArgoUMLVariants(Path model1Location, Path model2Location) {
 		final MatchEngineFactoryImpl matchEngineFactory = new UMLMatchEngineFactory(new EqualityHelper(EqualityHelper.createDefaultCache(CacheBuilder.newBuilder())));
 		matchEngineFactory.setRanking(20);
 
@@ -156,7 +149,6 @@ public class MMMetricsComputationTest {
 					@Override
 					public boolean checkForOrderingChanges(EStructuralFeature feature) {
 						return false;
-						// return super.checkForOrderingChanges(feature);
 					}
 				};
 			}
@@ -177,8 +169,6 @@ public class MMMetricsComputationTest {
 		System.out.println("LOADED SECOND RESOURCE");
 
 		org.eclipse.uml2.uml.Package model2 = (org.eclipse.uml2.uml.Package) ((org.eclipse.uml2.uml.Package) ((Model) resource2.getContents().stream().filter(v -> (v instanceof Model)).findFirst().get()));
-
-		// ---------------------
 
 		long timeStart = System.currentTimeMillis();
 
@@ -221,5 +211,4 @@ public class MMMetricsComputationTest {
 			}
 		}
 	}
-
 }

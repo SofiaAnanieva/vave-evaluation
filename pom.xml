@@ -3,13 +3,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>1.0.0</modelVersion>
-	<artifactId>tools.vave.eval</artifactId>
+	<artifactId>tools.vave</artifactId>
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>bundles</module>
-		<module>tests</module>
-		<module>features</module>
+		<module>tools.vave.evaluation</module>
 	</modules>
 
 </project>
