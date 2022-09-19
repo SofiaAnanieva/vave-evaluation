@@ -1,0 +1,940 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:Model xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_meL8sGpfEeyd-aNel4bwiw" name="umloutput">
+  <packagedElement xmi:type="uml:Package" xmi:id="_meSqYGpfEeyd-aNel4bwiw" name="lancs">
+    <packagedElement xmi:type="uml:Package" xmi:id="_meZYEGpfEeyd-aNel4bwiw" name="mobilemedia">
+      <packagedElement xmi:type="uml:Package" xmi:id="_meZYEWpfEeyd-aNel4bwiw" name="core">
+        <packagedElement xmi:type="uml:Package" xmi:id="_meZYEmpfEeyd-aNel4bwiw" name="threads">
+          <packagedElement xmi:type="uml:Class" xmi:id="_meZYE2pfEeyd-aNel4bwiw" name="BaseThread" visibility="public">
+            <interfaceRealization xmi:id="_meZ_I2pfEeyd-aNel4bwiw" name="Runnable" client="_meZYE2pfEeyd-aNel4bwiw" supplier="_meZ_ImpfEeyd-aNel4bwiw" contract="_meZ_ImpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_meZYFGpfEeyd-aNel4bwiw" name="BaseThread" visibility="public"/>
+            <ownedOperation xmi:id="_meZYFWpfEeyd-aNel4bwiw" name="run" visibility="public"/>
+          </packagedElement>
+        </packagedElement>
+        <packagedElement xmi:type="uml:Package" xmi:id="_meb0UGpfEeyd-aNel4bwiw" name="ui">
+          <packagedElement xmi:type="uml:Package" xmi:id="_meb0UWpfEeyd-aNel4bwiw" name="controller">
+            <packagedElement xmi:type="uml:Class" xmi:id="_meb0UmpfEeyd-aNel4bwiw" name="AbstractController" visibility="public" isAbstract="true">
+              <ownedAttribute xmi:id="_mecbYGpfEeyd-aNel4bwiw" name="midlet" visibility="protected" type="_mee3oWpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mecbYWpfEeyd-aNel4bwiw" name="nextController" visibility="private" type="_meeQlWpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mecbYmpfEeyd-aNel4bwiw" name="albumData" visibility="private" type="_mefesWpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mecbY2pfEeyd-aNel4bwiw" name="albumListScreen" visibility="private" type="_megFwWpfEeyd-aNel4bwiw"/>
+              <interfaceRealization xmi:id="_meeQlGpfEeyd-aNel4bwiw" name="CommandListener" client="_meb0UmpfEeyd-aNel4bwiw" supplier="_meeQk2pfEeyd-aNel4bwiw" contract="_meeQk2pfEeyd-aNel4bwiw"/>
+              <interfaceRealization xmi:id="_mee3oGpfEeyd-aNel4bwiw" name="ControllerInterface" client="_meb0UmpfEeyd-aNel4bwiw" supplier="_meeQlWpfEeyd-aNel4bwiw" contract="_meeQlWpfEeyd-aNel4bwiw"/>
+              <ownedOperation xmi:id="_mecbZGpfEeyd-aNel4bwiw" name="AbstractController" visibility="public">
+                <ownedParameter xmi:id="_megFwmpfEeyd-aNel4bwiw" name="midlet" type="_mee3oWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_megFw2pfEeyd-aNel4bwiw" name="albumData" type="_mefesWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_megs0GpfEeyd-aNel4bwiw" name="albumListScreen" type="_megFwWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mecbZWpfEeyd-aNel4bwiw" name="postCommand" visibility="public">
+                <ownedParameter xmi:id="_meh68GpfEeyd-aNel4bwiw" name="command" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medCcGpfEeyd-aNel4bwiw" name="commandAction" visibility="public">
+                <ownedParameter xmi:id="_mek-QGpfEeyd-aNel4bwiw" name="c" type="_mejJEGpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mek-QWpfEeyd-aNel4bwiw" name="d" type="_memMYGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medCcWpfEeyd-aNel4bwiw" name="setAlbumListAsCurrentScreen" visibility="public">
+                <ownedParameter xmi:id="_memzcGpfEeyd-aNel4bwiw" name="a" type="_menagGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medCcmpfEeyd-aNel4bwiw" name="setCurrentScreen" visibility="public">
+                <ownedParameter xmi:id="_meoBkGpfEeyd-aNel4bwiw" name="a" type="_menagGpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_meoBkWpfEeyd-aNel4bwiw" name="d" type="_memMYGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medCc2pfEeyd-aNel4bwiw" name="getCurrentScreen" visibility="public">
+                <ownedParameter xmi:id="_meoooGpfEeyd-aNel4bwiw" name="" type="_memMYGpfEeyd-aNel4bwiw" direction="return"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medCdGpfEeyd-aNel4bwiw" name="setCurrentScreen" visibility="public">
+                <ownedParameter xmi:id="_mepPsGpfEeyd-aNel4bwiw" name="d" type="_memMYGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medCdWpfEeyd-aNel4bwiw" name="getAlbumData" visibility="public">
+                <ownedParameter xmi:id="_mep2wGpfEeyd-aNel4bwiw" name="" type="_mefesWpfEeyd-aNel4bwiw" direction="return"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medCdmpfEeyd-aNel4bwiw" name="setAlbumData" visibility="public">
+                <ownedParameter xmi:id="_meqd0GpfEeyd-aNel4bwiw" name="albumData" type="_mefesWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medpgGpfEeyd-aNel4bwiw" name="getNextController" visibility="public">
+                <ownedParameter xmi:id="_merE4GpfEeyd-aNel4bwiw" name="" type="_meeQlWpfEeyd-aNel4bwiw" direction="return"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medpgWpfEeyd-aNel4bwiw" name="setNextController" visibility="public">
+                <ownedParameter xmi:id="_merE4WpfEeyd-aNel4bwiw" name="nextController" type="_meeQlWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medpgmpfEeyd-aNel4bwiw" name="getCurrentStoreName" visibility="public">
+                <ownedParameter xmi:id="_merr8GpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_medpg2pfEeyd-aNel4bwiw" name="getAlbumListScreen" visibility="public">
+                <ownedParameter xmi:id="_mfF7oGpfEeyd-aNel4bwiw" name="" type="_megFwWpfEeyd-aNel4bwiw" direction="return"/>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Interface" xmi:id="_meeQlWpfEeyd-aNel4bwiw" name="ControllerInterface" visibility="public">
+              <ownedOperation xmi:id="_mf07cGpfEeyd-aNel4bwiw" name="postCommand" visibility="public" isAbstract="true">
+                <ownedParameter xmi:id="_mf1igGpfEeyd-aNel4bwiw" name="command" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf07cWpfEeyd-aNel4bwiw" name="handleCommand" visibility="public" isAbstract="true">
+                <ownedParameter xmi:id="_mf2JkGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mf2woGpfEeyd-aNel4bwiw" name="command" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mfHw0GpfEeyd-aNel4bwiw" name="AlbumController" visibility="public">
+              <generalization xmi:id="_mfIX4mpfEeyd-aNel4bwiw" general="_meb0UmpfEeyd-aNel4bwiw"/>
+              <ownedOperation xmi:id="_mfHw0WpfEeyd-aNel4bwiw" name="AlbumController" visibility="public">
+                <ownedParameter xmi:id="_mfIX42pfEeyd-aNel4bwiw" name="midlet" type="_mee3oWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mfIX5GpfEeyd-aNel4bwiw" name="albumData" type="_mefesWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mfI-8GpfEeyd-aNel4bwiw" name="albumListScreen" type="_megFwWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mfHw0mpfEeyd-aNel4bwiw" name="handleCommand" visibility="public">
+                <ownedParameter xmi:id="_mfKNEGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mfKNEWpfEeyd-aNel4bwiw" name="command" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mfIX4GpfEeyd-aNel4bwiw" name="resetImageData" visibility="private"/>
+              <ownedOperation xmi:id="_mfIX4WpfEeyd-aNel4bwiw" name="goToPreviousScreen" visibility="private"/>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mfouMGpfEeyd-aNel4bwiw" name="BaseController" visibility="public">
+              <generalization xmi:id="_mfpVQWpfEeyd-aNel4bwiw" general="_meb0UmpfEeyd-aNel4bwiw"/>
+              <ownedOperation xmi:id="_mfouMWpfEeyd-aNel4bwiw" name="BaseController" visibility="public">
+                <ownedParameter xmi:id="_mfpVQmpfEeyd-aNel4bwiw" name="midlet" type="_mee3oWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mfpVQ2pfEeyd-aNel4bwiw" name="model" type="_mefesWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mfp8UGpfEeyd-aNel4bwiw" name="albumListScreen" type="_megFwWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mfouMmpfEeyd-aNel4bwiw" name="init" visibility="public">
+                <ownedParameter xmi:id="_mfrKcGpfEeyd-aNel4bwiw" name="model" type="_mefesWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mfouM2pfEeyd-aNel4bwiw" name="handleCommand" visibility="public">
+                <ownedParameter xmi:id="_mfs_oGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mftmsGpfEeyd-aNel4bwiw" name="command" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mfpVQGpfEeyd-aNel4bwiw" name="goToPreviousScreen" visibility="private">
+                <ownedParameter xmi:id="_mfwqAGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mf7CEGpfEeyd-aNel4bwiw" name="PhotoController" visibility="public">
+              <generalization xmi:id="_mf-FYWpfEeyd-aNel4bwiw" general="_mf-FYGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mf7pIGpfEeyd-aNel4bwiw" name="image" visibility="private" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mf7pIWpfEeyd-aNel4bwiw" name="screen" visibility="private" type="_mf-scGpfEeyd-aNel4bwiw"/>
+              <ownedOperation xmi:id="_mf8QMGpfEeyd-aNel4bwiw" name="PhotoController" visibility="public">
+                <ownedParameter xmi:id="_mf-scWpfEeyd-aNel4bwiw" name="midlet" type="_mee3oWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mf_TgGpfEeyd-aNel4bwiw" name="albumData" type="_mefesWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mf_TgWpfEeyd-aNel4bwiw" name="albumListScreen" type="_megFwWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf8QMWpfEeyd-aNel4bwiw" name="handleCommand" visibility="public">
+                <ownedParameter xmi:id="_mgAhoGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mgBIsGpfEeyd-aNel4bwiw" name="command" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf8QMmpfEeyd-aNel4bwiw" name="updateImage">
+                <ownedParameter xmi:id="_mgV40GpfEeyd-aNel4bwiw" name="image" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf8QM2pfEeyd-aNel4bwiw" name="getSelectedImageName" visibility="public">
+                <ownedParameter xmi:id="_mgXG8GpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf83QGpfEeyd-aNel4bwiw" name="showImage" visibility="public">
+                <ownedParameter xmi:id="_mgYVEGpfEeyd-aNel4bwiw" name="name">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf83QWpfEeyd-aNel4bwiw" name="goToPreviousScreen" visibility="private">
+                <ownedParameter xmi:id="_mgdNkGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf83QmpfEeyd-aNel4bwiw" name="setImage" visibility="public">
+                <ownedParameter xmi:id="_mgfp0GpfEeyd-aNel4bwiw" name="image" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf83Q2pfEeyd-aNel4bwiw" name="getImage" visibility="public">
+                <ownedParameter xmi:id="_mggQ4GpfEeyd-aNel4bwiw" name="" type="_mf-FYmpfEeyd-aNel4bwiw" direction="return"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf9eUGpfEeyd-aNel4bwiw" name="setScreen" visibility="public">
+                <ownedParameter xmi:id="_mgg38GpfEeyd-aNel4bwiw" name="screen" type="_mf-scGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mf9eUWpfEeyd-aNel4bwiw" name="getScreen" visibility="public">
+                <ownedParameter xmi:id="_mghfAGpfEeyd-aNel4bwiw" name="" type="_mf-scGpfEeyd-aNel4bwiw" direction="return"/>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mf-FYGpfEeyd-aNel4bwiw" name="PhotoListController" visibility="public">
+              <generalization xmi:id="_mglwcWpfEeyd-aNel4bwiw" general="_meb0UmpfEeyd-aNel4bwiw"/>
+              <ownedOperation xmi:id="_mglJYGpfEeyd-aNel4bwiw" name="PhotoListController" visibility="public">
+                <ownedParameter xmi:id="_mgmXgGpfEeyd-aNel4bwiw" name="midlet" type="_mee3oWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mgmXgWpfEeyd-aNel4bwiw" name="albumData" type="_mefesWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mgmXgmpfEeyd-aNel4bwiw" name="albumListScreen" type="_megFwWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mglJYWpfEeyd-aNel4bwiw" name="handleCommand" visibility="public">
+                <ownedParameter xmi:id="_mgozwGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mgozwWpfEeyd-aNel4bwiw" name="command" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mglwcGpfEeyd-aNel4bwiw" name="showImageList" visibility="public">
+                <ownedParameter xmi:id="_mgrQAGpfEeyd-aNel4bwiw" name="recordName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mgrQAWpfEeyd-aNel4bwiw" name="sort">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mgrQAmpfEeyd-aNel4bwiw" name="favorite">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mgzy4GpfEeyd-aNel4bwiw" name="PhotoViewController" visibility="public">
+              <generalization xmi:id="_mg0Z8mpfEeyd-aNel4bwiw" general="_meb0UmpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mgzy4WpfEeyd-aNel4bwiw" name="imageName">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedOperation xmi:id="_mg0Z8GpfEeyd-aNel4bwiw" name="PhotoViewController" visibility="public">
+                <ownedParameter xmi:id="_mg1BAGpfEeyd-aNel4bwiw" name="midlet" type="_mee3oWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mg1oEGpfEeyd-aNel4bwiw" name="albumData" type="_mefesWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mg1oEWpfEeyd-aNel4bwiw" name="albumListScreen" type="_megFwWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mg1oEmpfEeyd-aNel4bwiw" name="imageName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mg0Z8WpfEeyd-aNel4bwiw" name="handleCommand" visibility="public">
+                <ownedParameter xmi:id="_mg3dQGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mg4EUGpfEeyd-aNel4bwiw" name="c" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mhB1UGpfEeyd-aNel4bwiw" name="ScreenSingleton" visibility="public">
+              <ownedAttribute xmi:id="_mhB1UWpfEeyd-aNel4bwiw" name="instance" visibility="private" isStatic="true" type="_mhB1UGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mhB1UmpfEeyd-aNel4bwiw" name="currentScreenName" visibility="private">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_mhB1U2pfEeyd-aNel4bwiw" name="currentStoreName" visibility="private">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedOperation xmi:id="_mhCcYGpfEeyd-aNel4bwiw" name="ScreenSingleton" visibility="private"/>
+              <ownedOperation xmi:id="_mhCcYWpfEeyd-aNel4bwiw" name="getInstance" visibility="public" isStatic="true">
+                <ownedParameter xmi:id="_mhERkGpfEeyd-aNel4bwiw" name="" type="_mhB1UGpfEeyd-aNel4bwiw" direction="return"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhCcYmpfEeyd-aNel4bwiw" name="setCurrentScreenName" visibility="public">
+                <ownedParameter xmi:id="_mhE4oGpfEeyd-aNel4bwiw" name="currentScreenName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhCcY2pfEeyd-aNel4bwiw" name="getCurrentScreenName" visibility="public">
+                <ownedParameter xmi:id="_mhGGwGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhCcZGpfEeyd-aNel4bwiw" name="setCurrentStoreName" visibility="public">
+                <ownedParameter xmi:id="_mhGt0GpfEeyd-aNel4bwiw" name="currentStoreName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhDDcGpfEeyd-aNel4bwiw" name="getCurrentStoreName" visibility="public">
+                <ownedParameter xmi:id="_mhHU4GpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+            </packagedElement>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_mee3oWpfEeyd-aNel4bwiw" name="MainUIMidlet" visibility="public">
+            <generalization xmi:id="_mjNmompfEeyd-aNel4bwiw" general="_mjNmoWpfEeyd-aNel4bwiw"/>
+            <ownedAttribute xmi:id="_mjMYgGpfEeyd-aNel4bwiw" name="rootController" visibility="private" type="_mfouMGpfEeyd-aNel4bwiw"/>
+            <ownedAttribute xmi:id="_mjMYgWpfEeyd-aNel4bwiw" name="model" visibility="private" type="_mefesWpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_mjMYgmpfEeyd-aNel4bwiw" name="MainUIMidlet" visibility="public"/>
+            <ownedOperation xmi:id="_mjM_kGpfEeyd-aNel4bwiw" name="startApp" visibility="public"/>
+            <ownedOperation xmi:id="_mjM_kWpfEeyd-aNel4bwiw" name="pauseApp" visibility="public"/>
+            <ownedOperation xmi:id="_mjM_kmpfEeyd-aNel4bwiw" name="destroyApp" visibility="public">
+              <ownedParameter xmi:id="_mjRRAGpfEeyd-aNel4bwiw" name="unconditional">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+              </ownedParameter>
+            </ownedOperation>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Package" xmi:id="_mefesGpfEeyd-aNel4bwiw" name="datamodel">
+            <packagedElement xmi:type="uml:Class" xmi:id="_mefesWpfEeyd-aNel4bwiw" name="AlbumData" visibility="public">
+              <ownedAttribute xmi:id="_mhJKEGpfEeyd-aNel4bwiw" name="imageAccessor" visibility="private" type="_mhM0cGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mhJKEWpfEeyd-aNel4bwiw" name="imageInfoTable" visibility="protected" type="_mhpgYWpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mhJKEmpfEeyd-aNel4bwiw" name="existingRecords" visibility="public">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+              </ownedAttribute>
+              <ownedOperation xmi:id="_mhJxIGpfEeyd-aNel4bwiw" name="AlbumData" visibility="public"/>
+              <ownedOperation xmi:id="_mhJxIWpfEeyd-aNel4bwiw" name="getAlbumNames" visibility="public">
+                <ownedParameter xmi:id="_mhqugGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhJxImpfEeyd-aNel4bwiw" name="getImages" visibility="public">
+                <ownedParameter xmi:id="_mhr8oGpfEeyd-aNel4bwiw" name="" type="_mf-FYmpfEeyd-aNel4bwiw" direction="return"/>
+                <ownedParameter xmi:id="_mhsjsGpfEeyd-aNel4bwiw" name="recordName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhJxI2pfEeyd-aNel4bwiw" name="createNewPhotoAlbum" visibility="public">
+                <ownedParameter xmi:id="_mhuY4GpfEeyd-aNel4bwiw" name="albumName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhJxJGpfEeyd-aNel4bwiw" name="deletePhotoAlbum" visibility="public">
+                <ownedParameter xmi:id="_mhu_8GpfEeyd-aNel4bwiw" name="albumName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhKYMGpfEeyd-aNel4bwiw" name="getImageFromRecordStore" visibility="public">
+                <ownedParameter xmi:id="_mhwOEGpfEeyd-aNel4bwiw" name="" type="_mhwOEWpfEeyd-aNel4bwiw" direction="return"/>
+                <ownedParameter xmi:id="_mhwOEmpfEeyd-aNel4bwiw" name="recordStore">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mhw1IGpfEeyd-aNel4bwiw" name="imageName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhKYMWpfEeyd-aNel4bwiw" name="addNewPhotoToAlbum" visibility="public">
+                <ownedParameter xmi:id="_mhzRYGpfEeyd-aNel4bwiw" name="label">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mhz4cGpfEeyd-aNel4bwiw" name="path">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mhz4cWpfEeyd-aNel4bwiw" name="album">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhKYMmpfEeyd-aNel4bwiw" name="deleteImage" visibility="public">
+                <ownedParameter xmi:id="_mh1toGpfEeyd-aNel4bwiw" name="imageName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mh1toWpfEeyd-aNel4bwiw" name="storeName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhKYM2pfEeyd-aNel4bwiw" name="resetImageData" visibility="public"/>
+              <ownedOperation xmi:id="_mhKYNGpfEeyd-aNel4bwiw" name="getImageInfoTable" visibility="public">
+                <ownedParameter xmi:id="_mh4J4GpfEeyd-aNel4bwiw" name="" type="_mhpgYWpfEeyd-aNel4bwiw" direction="return"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhK_QGpfEeyd-aNel4bwiw" name="setImageInfoTable" visibility="public">
+                <ownedParameter xmi:id="_mh4w8GpfEeyd-aNel4bwiw" name="imageInfoTable" type="_mhpgYWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhK_QWpfEeyd-aNel4bwiw" name="setImageAccessor" visibility="public">
+                <ownedParameter xmi:id="_mh5YAGpfEeyd-aNel4bwiw" name="imageAccessor" type="_mhM0cGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhK_QmpfEeyd-aNel4bwiw" name="getImageInfo" visibility="public">
+                <ownedParameter xmi:id="_mh6mIGpfEeyd-aNel4bwiw" name="" type="_mf-FYmpfEeyd-aNel4bwiw" direction="return"/>
+                <ownedParameter xmi:id="_mh7NMGpfEeyd-aNel4bwiw" name="name">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhK_Q2pfEeyd-aNel4bwiw" name="updateImageInfo" visibility="public">
+                <ownedParameter xmi:id="_mh8bUGpfEeyd-aNel4bwiw" name="oldData" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mh8bUWpfEeyd-aNel4bwiw" name="newData" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mhK_RGpfEeyd-aNel4bwiw" name="addImageData" visibility="public">
+                <ownedParameter xmi:id="_mh9pcGpfEeyd-aNel4bwiw" name="photoname">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mh9pcWpfEeyd-aNel4bwiw" name="imageData" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mh9pcmpfEeyd-aNel4bwiw" name="albumname">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mf-FYmpfEeyd-aNel4bwiw" name="ImageData" visibility="public">
+              <ownedAttribute xmi:id="_mi-9IGpfEeyd-aNel4bwiw" name="recordId" visibility="private">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_mi-9IWpfEeyd-aNel4bwiw" name="foreignRecordId" visibility="private">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_mi-9ImpfEeyd-aNel4bwiw" name="parentAlbumName" visibility="private">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_mi_kMGpfEeyd-aNel4bwiw" name="imageLabel" visibility="private">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_mi_kMWpfEeyd-aNel4bwiw" name="favorite" visibility="private">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+              </ownedAttribute>
+              <ownedOperation xmi:id="_mi_kMmpfEeyd-aNel4bwiw" name="ImageData" visibility="public">
+                <ownedParameter xmi:id="_mjCngGpfEeyd-aNel4bwiw" name="foreignRecordId">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mjDOkGpfEeyd-aNel4bwiw" name="parentAlbumName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mjDOkWpfEeyd-aNel4bwiw" name="imageLabel">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mi_kM2pfEeyd-aNel4bwiw" name="getRecordId" visibility="public">
+                <ownedParameter xmi:id="_mjFDwGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mi_kNGpfEeyd-aNel4bwiw" name="setRecordId" visibility="public">
+                <ownedParameter xmi:id="_mjFq0GpfEeyd-aNel4bwiw" name="recordId">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjALQGpfEeyd-aNel4bwiw" name="getForeignRecordId" visibility="public">
+                <ownedParameter xmi:id="_mjGR4GpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjALQWpfEeyd-aNel4bwiw" name="setForeignRecordId" visibility="public">
+                <ownedParameter xmi:id="_mjGR4WpfEeyd-aNel4bwiw" name="foreignRecordId">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjALQmpfEeyd-aNel4bwiw" name="getImageLabel" visibility="public">
+                <ownedParameter xmi:id="_mjG48GpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjALQ2pfEeyd-aNel4bwiw" name="setImageLabel" visibility="public">
+                <ownedParameter xmi:id="_mjHgAGpfEeyd-aNel4bwiw" name="imageLabel">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjALRGpfEeyd-aNel4bwiw" name="getParentAlbumName" visibility="public">
+                <ownedParameter xmi:id="_mjIHEGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjAyUGpfEeyd-aNel4bwiw" name="setParentAlbumName" visibility="public">
+                <ownedParameter xmi:id="_mjIuIGpfEeyd-aNel4bwiw" name="parentAlbumName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjAyUWpfEeyd-aNel4bwiw" name="toggleFavorite" visibility="public"/>
+              <ownedOperation xmi:id="_mjAyUmpfEeyd-aNel4bwiw" name="setFavorite" visibility="public">
+                <ownedParameter xmi:id="_mjJ8QGpfEeyd-aNel4bwiw" name="favorite">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjAyU2pfEeyd-aNel4bwiw" name="isFavorite" visibility="public">
+                <ownedParameter xmi:id="_mjKjUGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mhM0cGpfEeyd-aNel4bwiw" name="ImageAccessor" visibility="public">
+              <ownedAttribute xmi:id="_miBT0GpfEeyd-aNel4bwiw" name="ALBUM_LABEL" visibility="public" isStatic="true" isReadOnly="true">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_miBT0WpfEeyd-aNel4bwiw" name="INFO_LABEL" visibility="public" isStatic="true" isReadOnly="true">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_miBT0mpfEeyd-aNel4bwiw" name="DEFAULT_ALBUM_NAME" visibility="public" isStatic="true" isReadOnly="true">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_miBT02pfEeyd-aNel4bwiw" name="IMAGE_LABEL" visibility="public" isStatic="true" isReadOnly="true">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_miB64GpfEeyd-aNel4bwiw" name="albumNames" visibility="protected">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_miB64WpfEeyd-aNel4bwiw" name="model" visibility="protected" type="_mefesWpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_miB64mpfEeyd-aNel4bwiw" name="imageRS" visibility="private" type="_miIokWpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_miB642pfEeyd-aNel4bwiw" name="imageInfoRS" visibility="private" type="_miIokWpfEeyd-aNel4bwiw"/>
+              <ownedOperation xmi:id="_miB65GpfEeyd-aNel4bwiw" name="ImageAccessor" visibility="public">
+                <ownedParameter xmi:id="_miJPoGpfEeyd-aNel4bwiw" name="mod" type="_mefesWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miCh8GpfEeyd-aNel4bwiw" name="loadAlbums" visibility="public"/>
+              <ownedOperation xmi:id="_miCh8WpfEeyd-aNel4bwiw" name="resetImageRecordStore" visibility="public"/>
+              <ownedOperation xmi:id="_miCh8mpfEeyd-aNel4bwiw" name="addImageData" visibility="public">
+                <ownedParameter xmi:id="_miWD8GpfEeyd-aNel4bwiw" name="photoname">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_miWD8WpfEeyd-aNel4bwiw" name="path">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_miWD8mpfEeyd-aNel4bwiw" name="albumname">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miCh82pfEeyd-aNel4bwiw" name="addImageData" visibility="public">
+                <ownedParameter xmi:id="_mid_wGpfEeyd-aNel4bwiw" name="photoname">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mid_wWpfEeyd-aNel4bwiw" name="imageData" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mid_wmpfEeyd-aNel4bwiw" name="albumname">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miCh9GpfEeyd-aNel4bwiw" name="loadImageDataFromRMS" visibility="public">
+                <ownedParameter xmi:id="_miiRMGpfEeyd-aNel4bwiw" name="" type="_mf-FYmpfEeyd-aNel4bwiw" direction="return"/>
+                <ownedParameter xmi:id="_mii4QGpfEeyd-aNel4bwiw" name="recordName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miDJAGpfEeyd-aNel4bwiw" name="updateImageInfo" visibility="public">
+                <ownedParameter xmi:id="_minJsGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_minwwGpfEeyd-aNel4bwiw" name="oldData" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_minwwWpfEeyd-aNel4bwiw" name="newData" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miDJAWpfEeyd-aNel4bwiw" name="getImageInfo" visibility="public">
+                <ownedParameter xmi:id="_misCMGpfEeyd-aNel4bwiw" name="" type="_mf-FYmpfEeyd-aNel4bwiw" direction="return"/>
+                <ownedParameter xmi:id="_misCMWpfEeyd-aNel4bwiw" name="imageName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miDJAmpfEeyd-aNel4bwiw" name="setImageInfo" visibility="public">
+                <ownedParameter xmi:id="_mit3YGpfEeyd-aNel4bwiw" name="imageName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_miuecGpfEeyd-aNel4bwiw" name="newData" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miDJA2pfEeyd-aNel4bwiw" name="loadSingleImageFromRMS" visibility="public">
+                <ownedParameter xmi:id="_mivFgGpfEeyd-aNel4bwiw" name="" type="_mhwOEWpfEeyd-aNel4bwiw" direction="return"/>
+                <ownedParameter xmi:id="_mivskGpfEeyd-aNel4bwiw" name="recordName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mivskWpfEeyd-aNel4bwiw" name="imageName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mivskmpfEeyd-aNel4bwiw" name="recordId">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miDwEGpfEeyd-aNel4bwiw" name="loadImageBytesFromRMS" visibility="public">
+                <ownedParameter xmi:id="_miyI0GpfEeyd-aNel4bwiw" name="" direction="return"/>
+                <ownedParameter xmi:id="_miyv4GpfEeyd-aNel4bwiw" name="recordName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_miyv4WpfEeyd-aNel4bwiw" name="imageName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_miyv4mpfEeyd-aNel4bwiw" name="recordId">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miDwEWpfEeyd-aNel4bwiw" name="deleteSingleImageFromRMS" visibility="public">
+                <ownedParameter xmi:id="_mi1MIGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Boolean"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mi1MIWpfEeyd-aNel4bwiw" name="storeName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mi1zMGpfEeyd-aNel4bwiw" name="imageName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miDwEmpfEeyd-aNel4bwiw" name="createNewPhotoAlbum" visibility="public">
+                <ownedParameter xmi:id="_mi42gGpfEeyd-aNel4bwiw" name="albumName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miDwE2pfEeyd-aNel4bwiw" name="deletePhotoAlbum" visibility="public">
+                <ownedParameter xmi:id="_mi8g4GpfEeyd-aNel4bwiw" name="albumName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_miDwFGpfEeyd-aNel4bwiw" name="getAlbumNames" visibility="public">
+                <ownedParameter xmi:id="_mi9vAGpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+            </packagedElement>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Package" xmi:id="_megFwGpfEeyd-aNel4bwiw" name="screens">
+            <packagedElement xmi:type="uml:Class" xmi:id="_megFwWpfEeyd-aNel4bwiw" name="AlbumListScreen" visibility="public">
+              <generalization xmi:id="_mjf6gGpfEeyd-aNel4bwiw" general="_mjfTcGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mjc3MGpfEeyd-aNel4bwiw" name="exitCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mjc3MWpfEeyd-aNel4bwiw" name="selectCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mjc3MmpfEeyd-aNel4bwiw" name="createAlbumCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mjc3M2pfEeyd-aNel4bwiw" name="deleteAlbumCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mjdeQGpfEeyd-aNel4bwiw" name="resetCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedOperation xmi:id="_mjdeQWpfEeyd-aNel4bwiw" name="AlbumListScreen" visibility="public"/>
+              <ownedOperation xmi:id="_mjdeQmpfEeyd-aNel4bwiw" name="AlbumListScreen" visibility="public">
+                <ownedParameter xmi:id="_mjjk4GpfEeyd-aNel4bwiw" name="arg0">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mjjk4WpfEeyd-aNel4bwiw" name="arg1">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjdeQ2pfEeyd-aNel4bwiw" name="AlbumListScreen" visibility="public">
+                <ownedParameter xmi:id="_mjkzAGpfEeyd-aNel4bwiw" name="arg0">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mjlaEGpfEeyd-aNel4bwiw" name="arg1">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mjlaEWpfEeyd-aNel4bwiw" name="arg2">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mjlaEmpfEeyd-aNel4bwiw" name="arg3" type="_mhwOEWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjdeRGpfEeyd-aNel4bwiw" name="initMenu" visibility="public"/>
+              <ownedOperation xmi:id="_mjeFUGpfEeyd-aNel4bwiw" name="deleteAll" visibility="public"/>
+              <ownedOperation xmi:id="_mjeFUWpfEeyd-aNel4bwiw" name="repaintListAlbum" visibility="public">
+                <ownedParameter xmi:id="_mjprgGpfEeyd-aNel4bwiw" name="names">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mf-scGpfEeyd-aNel4bwiw" name="NewLabelScreen" visibility="public">
+              <generalization xmi:id="_mjukAWpfEeyd-aNel4bwiw" general="_mjUUUGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mjsu0GpfEeyd-aNel4bwiw" name="NEW_ALBUM" visibility="public" isStatic="true" isReadOnly="true">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_mjtV4GpfEeyd-aNel4bwiw" name="LABEL_PHOTO" visibility="public" isStatic="true" isReadOnly="true">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_mjtV4WpfEeyd-aNel4bwiw" name="labelName" type="_mjVicGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mjtV4mpfEeyd-aNel4bwiw" name="ok" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mjtV42pfEeyd-aNel4bwiw" name="cancel" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mjtV5GpfEeyd-aNel4bwiw" name="formType" visibility="private">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+              </ownedAttribute>
+              <ownedOperation xmi:id="_mjt88GpfEeyd-aNel4bwiw" name="NewLabelScreen" visibility="public">
+                <ownedParameter xmi:id="_mjxnUGpfEeyd-aNel4bwiw" name="name">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mjyOYGpfEeyd-aNel4bwiw" name="type">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjt88WpfEeyd-aNel4bwiw" name="NewLabelScreen" visibility="public">
+                <ownedParameter xmi:id="_mj0DkGpfEeyd-aNel4bwiw" name="title">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mj0qoGpfEeyd-aNel4bwiw" name="items" type="_mj14wGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjt88mpfEeyd-aNel4bwiw" name="getLabelName" visibility="public">
+                <ownedParameter xmi:id="_mj14wWpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjt882pfEeyd-aNel4bwiw" name="setFormType" visibility="public">
+                <ownedParameter xmi:id="_mj2f0GpfEeyd-aNel4bwiw" name="formType">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjukAGpfEeyd-aNel4bwiw" name="getFormType" visibility="public">
+                <ownedParameter xmi:id="_mj3t8GpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mjSfIGpfEeyd-aNel4bwiw" name="AddPhotoToAlbum" visibility="public">
+              <generalization xmi:id="_mjUUUWpfEeyd-aNel4bwiw" general="_mjUUUGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mjSfIWpfEeyd-aNel4bwiw" name="labeltxt" type="_mjVicGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mjSfImpfEeyd-aNel4bwiw" name="photopathtxt" type="_mjVicGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mjSfI2pfEeyd-aNel4bwiw" name="ok" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mjTGMGpfEeyd-aNel4bwiw" name="cancel" type="_mejJEGpfEeyd-aNel4bwiw"/>
+              <ownedOperation xmi:id="_mjTGMWpfEeyd-aNel4bwiw" name="AddPhotoToAlbum" visibility="public">
+                <ownedParameter xmi:id="_mjXXoGpfEeyd-aNel4bwiw" name="title">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjTGMmpfEeyd-aNel4bwiw" name="getPhotoName" visibility="public">
+                <ownedParameter xmi:id="_mjZM0GpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjTGM2pfEeyd-aNel4bwiw" name="setPhotoName" visibility="public">
+                <ownedParameter xmi:id="_mjZz4GpfEeyd-aNel4bwiw" name="photoName">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjTGNGpfEeyd-aNel4bwiw" name="getPath" visibility="public">
+                <ownedParameter xmi:id="_mjaa8GpfEeyd-aNel4bwiw" name="" direction="return">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mjTtQGpfEeyd-aNel4bwiw" name="setLabePhotoPath" visibility="public">
+                <ownedParameter xmi:id="_mjbCAGpfEeyd-aNel4bwiw" name="label">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mj48EGpfEeyd-aNel4bwiw" name="PhotoListScreen" visibility="public">
+              <generalization xmi:id="_mj6xQGpfEeyd-aNel4bwiw" general="_mjfTcGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mj48EWpfEeyd-aNel4bwiw" name="viewCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mj48EmpfEeyd-aNel4bwiw" name="addCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mj5jIGpfEeyd-aNel4bwiw" name="deleteCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mj5jIWpfEeyd-aNel4bwiw" name="backCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mj5jImpfEeyd-aNel4bwiw" name="editLabelCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mj5jI2pfEeyd-aNel4bwiw" name="favoriteCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mj6KMGpfEeyd-aNel4bwiw" name="viewFavoritesCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedOperation xmi:id="_mj6KMWpfEeyd-aNel4bwiw" name="PhotoListScreen" visibility="public"/>
+              <ownedOperation xmi:id="_mj6KMmpfEeyd-aNel4bwiw" name="initMenu" visibility="public"/>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mkDUIGpfEeyd-aNel4bwiw" name="PhotoViewScreen" visibility="public">
+              <generalization xmi:id="_mkFJUWpfEeyd-aNel4bwiw" general="_mkFJUGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mkDUIWpfEeyd-aNel4bwiw" name="imageName">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedAttribute>
+              <ownedAttribute xmi:id="_mkDUImpfEeyd-aNel4bwiw" name="image" type="_mhwOEWpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mkDUI2pfEeyd-aNel4bwiw" name="model" type="_mefesWpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mkD7MGpfEeyd-aNel4bwiw" name="backCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedAttribute xmi:id="_mkD7MWpfEeyd-aNel4bwiw" name="copyCommand" visibility="public" isStatic="true" type="_mejJEGpfEeyd-aNel4bwiw" isReadOnly="true"/>
+              <ownedOperation xmi:id="_mkD7MmpfEeyd-aNel4bwiw" name="PhotoViewScreen" visibility="public">
+                <ownedParameter xmi:id="_mkIMoGpfEeyd-aNel4bwiw" name="img" type="_mhwOEWpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mkD7M2pfEeyd-aNel4bwiw" name="PhotoViewScreen" visibility="public">
+                <ownedParameter xmi:id="_mkJawGpfEeyd-aNel4bwiw" name="mod" type="_mefesWpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mkJawWpfEeyd-aNel4bwiw" name="name">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mkEiQGpfEeyd-aNel4bwiw" name="loadImage" visibility="public"/>
+              <ownedOperation xmi:id="_mkEiQWpfEeyd-aNel4bwiw" name="paint" visibility="protected">
+                <ownedParameter xmi:id="_mkNFIGpfEeyd-aNel4bwiw" name="g" type="_mkNsMGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+            </packagedElement>
+            <packagedElement xmi:type="uml:Class" xmi:id="_mkQIcGpfEeyd-aNel4bwiw" name="SplashScreen" visibility="public">
+              <generalization xmi:id="_mkR9oWpfEeyd-aNel4bwiw" general="_mkFJUGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mkQvgGpfEeyd-aNel4bwiw" name="display" visibility="private" type="_mkTy0GpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mkQvgWpfEeyd-aNel4bwiw" name="next" visibility="private" type="_memMYGpfEeyd-aNel4bwiw"/>
+              <ownedAttribute xmi:id="_mkQvgmpfEeyd-aNel4bwiw" name="timer" visibility="private" type="_mkfZAGpfEeyd-aNel4bwiw"/>
+              <ownedOperation xmi:id="_mkQvg2pfEeyd-aNel4bwiw" name="SplashScreen" visibility="public">
+                <ownedParameter xmi:id="_mkfZAWpfEeyd-aNel4bwiw" name="display" type="_mkTy0GpfEeyd-aNel4bwiw"/>
+                <ownedParameter xmi:id="_mkgAEGpfEeyd-aNel4bwiw" name="next" type="_memMYGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mkRWkGpfEeyd-aNel4bwiw" name="keyPressed" visibility="protected">
+                <ownedParameter xmi:id="_mkh1QGpfEeyd-aNel4bwiw" name="keyCode">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mkRWkWpfEeyd-aNel4bwiw" name="paint" visibility="protected">
+                <ownedParameter xmi:id="_mkicUGpfEeyd-aNel4bwiw" name="g" type="_mkNsMGpfEeyd-aNel4bwiw"/>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mkRWkmpfEeyd-aNel4bwiw" name="pointerPressed" visibility="protected">
+                <ownedParameter xmi:id="_mkjqcGpfEeyd-aNel4bwiw" name="x">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+                <ownedParameter xmi:id="_mkjqcWpfEeyd-aNel4bwiw" name="y">
+                  <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+                </ownedParameter>
+              </ownedOperation>
+              <ownedOperation xmi:id="_mkRWk2pfEeyd-aNel4bwiw" name="showNotify" visibility="protected"/>
+              <ownedOperation xmi:id="_mkR9oGpfEeyd-aNel4bwiw" name="dismiss" visibility="private"/>
+            </packagedElement>
+          </packagedElement>
+        </packagedElement>
+        <packagedElement xmi:type="uml:Package" xmi:id="_mkqYIGpfEeyd-aNel4bwiw" name="util">
+          <packagedElement xmi:type="uml:Class" xmi:id="_mkqYIWpfEeyd-aNel4bwiw" name="Constants" visibility="public">
+            <ownedAttribute xmi:id="_mkq_MGpfEeyd-aNel4bwiw" name="ALBUMLIST_SCREEN" visibility="public" isStatic="true" isReadOnly="true">
+              <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+            </ownedAttribute>
+            <ownedAttribute xmi:id="_mkq_MWpfEeyd-aNel4bwiw" name="IMAGE_SCREEN" visibility="public" isStatic="true" isReadOnly="true">
+              <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+            </ownedAttribute>
+            <ownedAttribute xmi:id="_mkrmQGpfEeyd-aNel4bwiw" name="IMAGELIST_SCREEN" visibility="public" isStatic="true" isReadOnly="true">
+              <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+            </ownedAttribute>
+            <ownedAttribute xmi:id="_mkrmQWpfEeyd-aNel4bwiw" name="NEWALBUM_SCREEN" visibility="public" isStatic="true" isReadOnly="true">
+              <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+            </ownedAttribute>
+            <ownedAttribute xmi:id="_mksNUGpfEeyd-aNel4bwiw" name="CONFIRMDELETEALBUM_SCREEN" visibility="public" isStatic="true" isReadOnly="true">
+              <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+            </ownedAttribute>
+            <ownedAttribute xmi:id="_mks0YGpfEeyd-aNel4bwiw" name="ADDPHOTOTOALBUM_SCREEN" visibility="public" isStatic="true" isReadOnly="true">
+              <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+            </ownedAttribute>
+            <ownedAttribute xmi:id="_mks0YWpfEeyd-aNel4bwiw" name="SCREEN_WIDTH" visibility="public" isStatic="true" isReadOnly="true">
+              <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+            </ownedAttribute>
+            <ownedAttribute xmi:id="_mktbcGpfEeyd-aNel4bwiw" name="SCREEN_HEIGHT" visibility="public" isStatic="true" isReadOnly="true">
+              <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#Integer"/>
+            </ownedAttribute>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_mk0wMGpfEeyd-aNel4bwiw" name="ImageUtil" visibility="public">
+            <ownedAttribute xmi:id="_mk1XQGpfEeyd-aNel4bwiw" name="DELIMITER" visibility="private" isStatic="true" isReadOnly="true">
+              <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+            </ownedAttribute>
+            <ownedOperation xmi:id="_mk1XQWpfEeyd-aNel4bwiw" name="ImageUtil" visibility="public"/>
+            <ownedOperation xmi:id="_mk1XQmpfEeyd-aNel4bwiw" name="readImageAsByteArray" visibility="public">
+              <ownedParameter xmi:id="_mk3McGpfEeyd-aNel4bwiw" name="" direction="return"/>
+              <ownedParameter xmi:id="_mk3zgGpfEeyd-aNel4bwiw" name="imageFile">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mk1-UGpfEeyd-aNel4bwiw" name="getImageInfoFromBytes" visibility="public">
+              <ownedParameter xmi:id="_mlAWYGpfEeyd-aNel4bwiw" name="" type="_mf-FYmpfEeyd-aNel4bwiw" direction="return"/>
+              <ownedParameter xmi:id="_mlA9cGpfEeyd-aNel4bwiw" name="bytes"/>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mk1-UWpfEeyd-aNel4bwiw" name="getBytesFromImageInfo" visibility="public">
+              <ownedParameter xmi:id="_mlSDMGpfEeyd-aNel4bwiw" name="" direction="return"/>
+              <ownedParameter xmi:id="_mlTRUGpfEeyd-aNel4bwiw" name="ii" type="_mf-FYmpfEeyd-aNel4bwiw"/>
+            </ownedOperation>
+          </packagedElement>
+        </packagedElement>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Package" xmi:id="_mlfekGpfEeyd-aNel4bwiw" name="lib">
+        <packagedElement xmi:type="uml:Package" xmi:id="_mlfekWpfEeyd-aNel4bwiw" name="exceptions">
+          <packagedElement xmi:type="uml:Class" xmi:id="_mlfekmpfEeyd-aNel4bwiw" name="ImageNotFoundException" visibility="public">
+            <generalization xmi:id="_mlih4WpfEeyd-aNel4bwiw" general="_mlih4GpfEeyd-aNel4bwiw"/>
+            <ownedAttribute xmi:id="_mlgFoGpfEeyd-aNel4bwiw" name="cause" visibility="private" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_mlgFoWpfEeyd-aNel4bwiw" name="ImageNotFoundException" visibility="public"/>
+            <ownedOperation xmi:id="_mlgssGpfEeyd-aNel4bwiw" name="ImageNotFoundException" visibility="public">
+              <ownedParameter xmi:id="_ml0OsGpfEeyd-aNel4bwiw" name="arg0">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mlgssWpfEeyd-aNel4bwiw" name="ImageNotFoundException" visibility="public">
+              <ownedParameter xmi:id="_ml2D4GpfEeyd-aNel4bwiw" name="arg0" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mlhTwGpfEeyd-aNel4bwiw" name="getCause" visibility="public">
+              <ownedParameter xmi:id="_ml3SAGpfEeyd-aNel4bwiw" name="" type="_mlznoGpfEeyd-aNel4bwiw" direction="return"/>
+            </ownedOperation>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_ml5uQGpfEeyd-aNel4bwiw" name="ImagePathNotValidException" visibility="public">
+            <generalization xmi:id="_ml8xkGpfEeyd-aNel4bwiw" general="_ml8KgGpfEeyd-aNel4bwiw"/>
+            <ownedAttribute xmi:id="_ml6VUGpfEeyd-aNel4bwiw" name="cause" visibility="private" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_ml6VUWpfEeyd-aNel4bwiw" name="ImagePathNotValidException" visibility="public"/>
+            <ownedOperation xmi:id="_ml68YGpfEeyd-aNel4bwiw" name="ImagePathNotValidException" visibility="public">
+              <ownedParameter xmi:id="_ml9_sGpfEeyd-aNel4bwiw" name="arg0">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+            <ownedOperation xmi:id="_ml68YWpfEeyd-aNel4bwiw" name="ImagePathNotValidException" visibility="public">
+              <ownedParameter xmi:id="_ml_04GpfEeyd-aNel4bwiw" name="arg0" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            </ownedOperation>
+            <ownedOperation xmi:id="_ml7jcGpfEeyd-aNel4bwiw" name="getCause" visibility="public">
+              <ownedParameter xmi:id="_mmEtYGpfEeyd-aNel4bwiw" name="" type="_mlznoGpfEeyd-aNel4bwiw" direction="return"/>
+            </ownedOperation>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_ml8KgGpfEeyd-aNel4bwiw" name="InvalidImageDataException" visibility="public">
+            <generalization xmi:id="_mmLbEGpfEeyd-aNel4bwiw" general="_mlih4GpfEeyd-aNel4bwiw"/>
+            <ownedAttribute xmi:id="_mmKM8GpfEeyd-aNel4bwiw" name="cause" visibility="private" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_mmKM8WpfEeyd-aNel4bwiw" name="InvalidImageDataException" visibility="public"/>
+            <ownedOperation xmi:id="_mmK0AGpfEeyd-aNel4bwiw" name="InvalidImageDataException" visibility="public">
+              <ownedParameter xmi:id="_mmMCIGpfEeyd-aNel4bwiw" name="arg0">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmK0AWpfEeyd-aNel4bwiw" name="InvalidImageDataException" visibility="public">
+              <ownedParameter xmi:id="_mmNQQGpfEeyd-aNel4bwiw" name="arg0" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmK0AmpfEeyd-aNel4bwiw" name="getCause" visibility="public">
+              <ownedParameter xmi:id="_mmN3UGpfEeyd-aNel4bwiw" name="" type="_mlznoGpfEeyd-aNel4bwiw" direction="return"/>
+            </ownedOperation>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_mmHJoGpfEeyd-aNel4bwiw" name="InvalidArrayFormatException" visibility="public">
+            <generalization xmi:id="_mmHwsGpfEeyd-aNel4bwiw" general="_ml8KgGpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_mmHJoWpfEeyd-aNel4bwiw" name="InvalidArrayFormatException" visibility="public"/>
+            <ownedOperation xmi:id="_mmHJompfEeyd-aNel4bwiw" name="InvalidArrayFormatException" visibility="public">
+              <ownedParameter xmi:id="_mmHwsWpfEeyd-aNel4bwiw" name="arg0">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmHJo2pfEeyd-aNel4bwiw" name="InvalidArrayFormatException" visibility="public">
+              <ownedParameter xmi:id="_mmI-0GpfEeyd-aNel4bwiw" name="arg0" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            </ownedOperation>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_mmPsgGpfEeyd-aNel4bwiw" name="InvalidImageFormatException" visibility="public">
+            <generalization xmi:id="_mmQTkGpfEeyd-aNel4bwiw" general="_ml8KgGpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_mmPsgWpfEeyd-aNel4bwiw" name="InvalidImageFormatException" visibility="public"/>
+            <ownedOperation xmi:id="_mmPsgmpfEeyd-aNel4bwiw" name="InvalidImageFormatException" visibility="public">
+              <ownedParameter xmi:id="_mmQTkWpfEeyd-aNel4bwiw" name="arg0">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmPsg2pfEeyd-aNel4bwiw" name="InvalidImageFormatException" visibility="public">
+              <ownedParameter xmi:id="_mmQ6oGpfEeyd-aNel4bwiw" name="arg0" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            </ownedOperation>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_mmSv0GpfEeyd-aNel4bwiw" name="InvalidPhotoAlbumNameException" visibility="public">
+            <generalization xmi:id="_mmTW4WpfEeyd-aNel4bwiw" general="_mlih4GpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_mmSv0WpfEeyd-aNel4bwiw" name="InvalidPhotoAlbumNameException" visibility="public"/>
+            <ownedOperation xmi:id="_mmTW4GpfEeyd-aNel4bwiw" name="InvalidPhotoAlbumNameException" visibility="public">
+              <ownedParameter xmi:id="_mmT98GpfEeyd-aNel4bwiw" name="s">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_mmVMEGpfEeyd-aNel4bwiw" name="NullAlbumDataReference" visibility="public">
+            <generalization xmi:id="_mmWaMGpfEeyd-aNel4bwiw" general="_mlih4GpfEeyd-aNel4bwiw"/>
+            <ownedAttribute xmi:id="_mmVMEWpfEeyd-aNel4bwiw" name="cause" visibility="private" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_mmVzIGpfEeyd-aNel4bwiw" name="NullAlbumDataReference" visibility="public"/>
+            <ownedOperation xmi:id="_mmVzIWpfEeyd-aNel4bwiw" name="NullAlbumDataReference" visibility="public">
+              <ownedParameter xmi:id="_mmXBQGpfEeyd-aNel4bwiw" name="arg0">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmVzImpfEeyd-aNel4bwiw" name="NullAlbumDataReference" visibility="public">
+              <ownedParameter xmi:id="_mmYPYGpfEeyd-aNel4bwiw" name="arg0" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmVzI2pfEeyd-aNel4bwiw" name="getCause" visibility="public">
+              <ownedParameter xmi:id="_mmY2cGpfEeyd-aNel4bwiw" name="" type="_mlznoGpfEeyd-aNel4bwiw" direction="return"/>
+            </ownedOperation>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_mmaroGpfEeyd-aNel4bwiw" name="PersistenceMechanismException" visibility="public">
+            <generalization xmi:id="_mmb5wGpfEeyd-aNel4bwiw" general="_mlih4GpfEeyd-aNel4bwiw"/>
+            <ownedAttribute xmi:id="_mmbSsGpfEeyd-aNel4bwiw" name="cause" visibility="private" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_mmaroWpfEeyd-aNel4bwiw" name="PersistenceMechanismException" visibility="public">
+              <ownedParameter xmi:id="_mmb5wWpfEeyd-aNel4bwiw" name="arg0">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmarompfEeyd-aNel4bwiw" name="PersistenceMechanismException" visibility="public"/>
+            <ownedOperation xmi:id="_mmbSsWpfEeyd-aNel4bwiw" name="PersistenceMechanismException" visibility="public">
+              <ownedParameter xmi:id="_mmdu8GpfEeyd-aNel4bwiw" name="arg0" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmbSsmpfEeyd-aNel4bwiw" name="getCause" visibility="public">
+              <ownedParameter xmi:id="_mmeWAGpfEeyd-aNel4bwiw" name="" type="_mlznoGpfEeyd-aNel4bwiw" direction="return"/>
+            </ownedOperation>
+          </packagedElement>
+          <packagedElement xmi:type="uml:Class" xmi:id="_mmgLMGpfEeyd-aNel4bwiw" name="UnavailablePhotoAlbumException" visibility="public">
+            <generalization xmi:id="_mmhZUGpfEeyd-aNel4bwiw" general="_mlih4GpfEeyd-aNel4bwiw"/>
+            <ownedAttribute xmi:id="_mmgLMWpfEeyd-aNel4bwiw" name="cause" visibility="private" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            <ownedOperation xmi:id="_mmgLMmpfEeyd-aNel4bwiw" name="UnavailablePhotoAlbumException" visibility="public"/>
+            <ownedOperation xmi:id="_mmgyQGpfEeyd-aNel4bwiw" name="UnavailablePhotoAlbumException" visibility="public">
+              <ownedParameter xmi:id="_mmiAYGpfEeyd-aNel4bwiw" name="arg0">
+                <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+              </ownedParameter>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmgyQWpfEeyd-aNel4bwiw" name="UnavailablePhotoAlbumException" visibility="public">
+              <ownedParameter xmi:id="_mmjOgGpfEeyd-aNel4bwiw" name="arg0" type="_mlznoGpfEeyd-aNel4bwiw"/>
+            </ownedOperation>
+            <ownedOperation xmi:id="_mmgyQmpfEeyd-aNel4bwiw" name="getCause" visibility="public">
+              <ownedParameter xmi:id="_mmj1kGpfEeyd-aNel4bwiw" name="" type="_mlznoGpfEeyd-aNel4bwiw" direction="return"/>
+            </ownedOperation>
+          </packagedElement>
+        </packagedElement>
+      </packagedElement>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_meZ_IGpfEeyd-aNel4bwiw" name="java">
+    <packagedElement xmi:type="uml:Package" xmi:id="_meZ_IWpfEeyd-aNel4bwiw" name="lang">
+      <packagedElement xmi:type="uml:Interface" xmi:id="_meZ_ImpfEeyd-aNel4bwiw" name="Runnable"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_mlih4GpfEeyd-aNel4bwiw" name="Exception"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_mlznoGpfEeyd-aNel4bwiw" name="Throwable" visibility="public"/>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Package" xmi:id="_mhpgYGpfEeyd-aNel4bwiw" name="util">
+      <packagedElement xmi:type="uml:Class" xmi:id="_mhpgYWpfEeyd-aNel4bwiw" name="Hashtable" visibility="public"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_mkfZAGpfEeyd-aNel4bwiw" name="Timer" visibility="public"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_mkn74GpfEeyd-aNel4bwiw" name="TimerTask"/>
+    </packagedElement>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Package" xmi:id="_meeQkGpfEeyd-aNel4bwiw" name="javax">
+    <packagedElement xmi:type="uml:Package" xmi:id="_meeQkWpfEeyd-aNel4bwiw" name="microedition">
+      <packagedElement xmi:type="uml:Package" xmi:id="_meeQkmpfEeyd-aNel4bwiw" name="lcdui">
+        <packagedElement xmi:type="uml:Interface" xmi:id="_meeQk2pfEeyd-aNel4bwiw" name="CommandListener"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_mejJEGpfEeyd-aNel4bwiw" name="Command" visibility="public"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_memMYGpfEeyd-aNel4bwiw" name="Displayable" visibility="public"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_menagGpfEeyd-aNel4bwiw" name="Alert" visibility="public"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_mhwOEWpfEeyd-aNel4bwiw" name="Image" visibility="public"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_mjUUUGpfEeyd-aNel4bwiw" name="Form"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_mjVicGpfEeyd-aNel4bwiw" name="TextField" visibility="public"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_mjfTcGpfEeyd-aNel4bwiw" name="List"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_mj14wGpfEeyd-aNel4bwiw" name="Item" visibility="public"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_mkFJUGpfEeyd-aNel4bwiw" name="Canvas"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_mkNsMGpfEeyd-aNel4bwiw" name="Graphics" visibility="public"/>
+        <packagedElement xmi:type="uml:Class" xmi:id="_mkTy0GpfEeyd-aNel4bwiw" name="Display" visibility="public"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Package" xmi:id="_miIokGpfEeyd-aNel4bwiw" name="rms">
+        <packagedElement xmi:type="uml:Class" xmi:id="_miIokWpfEeyd-aNel4bwiw" name="RecordStore" visibility="public"/>
+      </packagedElement>
+      <packagedElement xmi:type="uml:Package" xmi:id="_mjNmoGpfEeyd-aNel4bwiw" name="midlet">
+        <packagedElement xmi:type="uml:Class" xmi:id="_mjNmoWpfEeyd-aNel4bwiw" name="MIDlet"/>
+      </packagedElement>
+    </packagedElement>
+  </packagedElement>
+</uml:Model>

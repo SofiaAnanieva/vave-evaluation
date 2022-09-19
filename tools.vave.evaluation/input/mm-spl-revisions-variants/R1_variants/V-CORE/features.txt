@@ -1,0 +1,6 @@
+MobileMedia;MobileMedia
+MediaManagement;MediaManagement
+CreateDelete;CreateDelete
+ViewPlay;ViewPlay
+Photo;includePhotoAlbum
+Exception;Exception

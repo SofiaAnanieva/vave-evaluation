@@ -175,7 +175,7 @@ public class ArgoUMLEvalTest {
 		cp.registerClassifierJar(URI.createFileURI(Paths.get("resources\\argouml\\jmi.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
 		// Path[] libraryFolders = new Path[] { location };
-		Path[] libraryFolders = new Path[] { Paths.get("input/dependencies") };
+		Path[] libraryFolders = new Path[] { Paths.get("input/argouml-dependencies").toAbsolutePath() };
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
 				if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {
@@ -384,7 +384,7 @@ public class ArgoUMLEvalTest {
 		refRSCP.registerClassifierJar(URI.createFileURI(Paths.get("resources\\argouml\\jmi.jar").toAbsolutePath().toString()));
 		List<Path> jarFiles = new ArrayList<>();
 		// Path[] libraryFolders = new Path[] { location };
-		Path[] libraryFolders = new Path[] { Paths.get("input/dependencies") };
+		Path[] libraryFolders = new Path[] { Paths.get("input/argouml-dependencies").toAbsolutePath() };
 		for (Path libraryFolder : libraryFolders) {
 			Files.walk(libraryFolder).forEach(f -> {
 				if (Files.isRegularFile(f) && f.getFileName().toString().endsWith(".jar")) {

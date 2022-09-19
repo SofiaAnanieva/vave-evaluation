@@ -27,7 +27,7 @@ public class ArgoUMLVirtualProductModelInitializer implements VirtualProductMode
 		JavaClasspath classPath = JavaClasspath.get(resourceSet, JavaClasspath.getInitializers());
 		classPath.registerClassifierJar(URI.createFileURI(Paths.get("resources\\jamopp\\rt.jar").toAbsolutePath().toString()));
 		classPath.registerClassifierJar(URI.createFileURI(Paths.get("resources\\argouml\\jmi.jar").toAbsolutePath().toString()));
-		Path[] libraryFolders = new Path[] { Paths.get("C:\\FZI\\git\\argouml-workaround\\src\\") };
+		Path[] libraryFolders = new Path[] { Paths.get("input/argouml-dependencies").toAbsolutePath() };
 
 		try {
 			for (Path libraryFolder : libraryFolders) {
